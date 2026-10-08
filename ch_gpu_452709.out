@@ -1,0 +1,16 @@
+Job started on gpu1 at Thu Oct  1 15:48:47 IST 2026
+Python Path: /iitjhome/m25ph1006/chc_uno_v1/env/bin/python
+CUDA Available Devices: 0
+PyTorch GPU Available: True
+Device Name: NVIDIA A100-SXM4-40GB
+======================= PREDICTION =======================
+[gen] device=cuda:0 NVIDIA A100-SXM4-40GB, l=64, END=500, 50,000 steps, dt=0.01
+[gen] 20 train + 5 val trajectories over off=[-0.4, -0.2, 0.0, 0.2, 0.4]
+  [train] 20/20 trajectories (14.8s)
+  [val] 5/5 trajectories (13.7s)
+[gen] train_X (20, 4990, 64, 64)  val_X (5, 4990, 64, 64)  float64
+[gen] writing /iitjhome/m25ph1006/chc_uno_v1/Work/data/test_t0500.npz (8.18 GB)
+[gen] metadata -> /iitjhome/m25ph1006/chc_uno_v1/Work/data/test_t0500.json
+[gen] done in 0.6 min
+
+Job finished at Thu Oct  1 15:49:37 IST 2026

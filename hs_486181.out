@@ -1,0 +1,10 @@
+Job started on cn20 at Wed Oct  7 21:11:03 IST 2026
+Python Path: /scratch/apps/spack/opt/spack/linux-rhel8-zen2/gcc-12.2.0/python-3.11.7-5lq34nvmagne2kk5vrue43h76b5wej7a/bin/python3
+cwd $HOME  ->  /iitjhome/m25ph1006/chc_uno_v1  [gpfs]
+  size 210.0 TB | used 23.6 TB (11%) | available 186.4 TB
+  inodes: 152,866,994 used of 4,294,967,296
+$TMPDIR /tmp  ->  /tmp  [ext4]
+  size 312.1 GB | used 5.1 GB (2%) | available 291.1 GB
+  inodes: 78,853 used of 20,856,832
+
+Job finished at Wed Oct  7 21:11:04 IST 2026

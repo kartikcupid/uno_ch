@@ -1,0 +1,91 @@
+Job started on gpu1 at Tue Oct  6 09:53:16 IST 2026
+Python Path: /iitjhome/m25ph1006/chc_uno_v1/env/bin/python
+CUDA Available Devices: 0
+PyTorch GPU Available: True
+Device Name: NVIDIA A100-SXM4-40GB
+======================= TRAINING =======================
+==============================================================================
+ UNO / Cahn-Hilliard -- TRAINING   2026-10-06 09:53:22
+==============================================================================
+[setup] END = 1000  data Work/data/test_t1000.npz  validation to t = 10000
+[setup] NVIDIA A100-SXM4-40GB, 42.4 GB, torch 2.13.0+cu126
+[setup] device=cuda:0 precision=fp32 dtype=torch.float32 world_size=1
+[setup] model dir -> /iitjhome/m25ph1006/chc_uno_v1/Work/models/train_t1000
+[data] Work/data/test_t1000.npz -> training data ends at t = 1000  train_X (20, 9990, 64, 64)
+[data] train (20, 9990, 64, 64)  val (5, 9990, 64, 64)  float32, 3.27 GB
+[data] train_off=all -> trajectories [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19] (off=[-0.4, -0.2, 0.0, 0.2, 0.4])
+[data] sign-flip augmentation on, sampling from cuda:0
+[val] l=128 ground truth to t=10000 for seeds [31337, 24601, 8675309, 20250, 42424, 90210, 23571, 55555, 48151, 62831] in Work/gt_cache
+[model] 17,901,252 parameters, modes/level [20, 10, 5, 2], dtype=torch.float32
+[model] conserve_mass=True dt_conditioned=True residual_prediction=True
+[data] max trainable dt by unroll: 1 -> 50.0, 2 -> 50.0, 4 -> 50.0
+[resume] ignoring uno_ch_state.pt: training schedule changed: {'select': (None, 'survival'), 'select_min_delta': (None, 1.0)}
+[resume] kept as uno_ch_state_stale.pt; starting fresh
+[resume] fresh start: kept the existing checkpoint as uno_ch_best_prev.pt so this run cannot overwrite it with an early-epoch model
+[setup] early stopping disabled (patience=0); the no-gain counter is still logged, so the epoch any patience would have fired at can be read straight off the log
+epoch   1/60 | unroll  1 | train 0.11970 | val1 0.02226 | d/psi 0.0375 | lr 3.00e-03 | 28.1s (140 ms/step)
+epoch   2/60 | unroll  1 | train 0.02262 | val1 0.01405 | d/psi 0.0572 | lr 3.00e-03 | 22.4s (112 ms/step) | rollout -0.4287 | in-range R2 0.0964 (t <= 2000) | survives t=  148.0 [148, 148, 145, 148, 149, 151, 148, 149, 145, 149]  <- best
+epoch   3/60 | unroll  1 | train 0.02023 | val1 0.03013 | d/psi 0.0583 | lr 2.99e-03 | 21.6s (108 ms/step)
+epoch   4/60 | unroll  1 | train 0.01158 | val1 0.01217 | d/psi 0.0598 | lr 2.98e-03 | 21.5s (108 ms/step) | rollout -0.3685 | in-range R2 0.1076 (t <= 2000) | survives t=  151.9 [152, 152, 149, 152, 153, 155, 151, 153, 150, 153]  <- best
+[stage] unroll -> 2; max trainable dt 50.0
+epoch   5/60 | unroll  2 | train 0.01321 | val1 0.01520 | d/psi 0.0637 | lr 1.93e-03 | 25.6s (128 ms/step)
+epoch   6/60 | unroll  2 | train 0.01246 | val1 0.01265 | d/psi 0.0632 | lr 1.92e-03 | 24.0s (120 ms/step) | rollout 0.0178 | in-range R2 0.1572 (t <= 2000) | survives t=  162.1 [162, 161, 157, 162, 165, 165, 159, 164, 162, 163]  <- best
+epoch   7/60 | unroll  2 | train 0.01053 | val1 0.01025 | d/psi 0.0615 | lr 1.90e-03 | 27.2s (136 ms/step)
+epoch   8/60 | unroll  2 | train 0.01057 | val1 0.01412 | d/psi 0.0613 | lr 1.88e-03 | 25.4s (127 ms/step) | rollout 0.3399 | in-range R2 0.3822 (t <= 2000) | survives t=  186.7 [189, 183, 177, 189, 191, 188, 176, 193, 195, 187]  <- best
+epoch   9/60 | unroll  2 | train 0.00912 | val1 0.00501 | d/psi 0.0604 | lr 1.86e-03 | 24.2s (121 ms/step)
+epoch  10/60 | unroll  2 | train 0.00913 | val1 0.00472 | d/psi 0.0619 | lr 1.84e-03 | 26.3s (132 ms/step) | rollout 0.5308 | in-range R2 0.5937 (t <= 2000) | survives t=  250.8 [259, 234, 226, 263, 243, 241, 214, 289, 284, 254]  <- best
+epoch  11/60 | unroll  2 | train 0.00868 | val1 0.00419 | d/psi 0.0606 | lr 1.82e-03 | 25.8s (129 ms/step)
+[stage] unroll -> 4; max trainable dt 50.0
+epoch  12/60 | unroll  4 | train 0.01370 | val1 0.00154 | d/psi 0.0647 | lr 1.16e-03 | 32.7s (164 ms/step) | rollout 0.5763 | in-range R2 0.7356 (t <= 2000) | survives t=  417.0 [418, 417, 358, 441, 386, 386, 431, 496, 410, 426]  <- best
+epoch  13/60 | unroll  4 | train 0.01237 | val1 0.00207 | d/psi 0.0647 | lr 1.14e-03 | 30.6s (153 ms/step)
+epoch  14/60 | unroll  4 | train 0.01245 | val1 0.00147 | d/psi 0.0625 | lr 1.12e-03 | 30.3s (151 ms/step) | rollout 0.4814 | in-range R2 0.8196 (t <= 2000) | survives t= 1178.0 [610, 1127, 932, 1623, 1251, 728, 1043, 1313, 1837, 1316]  <- best
+epoch  15/60 | unroll  4 | train 0.01219 | val1 0.00138 | d/psi 0.0660 | lr 1.10e-03 | 30.6s (153 ms/step)
+epoch  16/60 | unroll  4 | train 0.01150 | val1 0.00112 | d/psi 0.0620 | lr 1.08e-03 | 30.6s (153 ms/step) | rollout 0.3739 | in-range R2 0.8612 (t <= 2000) | survives t= 1852.3 [1127, 1249, 1335, 2390, 2382, 1050, 1434, 3479, 2453, 1623]  <- best
+epoch  17/60 | unroll  4 | train 0.01170 | val1 0.00077 | d/psi 0.0650 | lr 1.05e-03 | 30.6s (153 ms/step)
+epoch  18/60 | unroll  4 | train 0.01195 | val1 0.00035 | d/psi 0.0661 | lr 1.03e-03 | 30.6s (153 ms/step) | rollout 0.2705 | in-range R2 0.8793 (t <= 2000) | survives t= 1834.8 [1284, 1251, 1339, 2328, 2290, 1083, 1536, 3163, 2477, 1596]  (no gain 1/off)
+epoch  19/60 | unroll  4 | train 0.01056 | val1 0.00024 | d/psi 0.0651 | lr 9.99e-04 | 30.6s (153 ms/step)
+epoch  20/60 | unroll  4 | train 0.01022 | val1 0.00036 | d/psi 0.0630 | lr 9.71e-04 | 30.6s (153 ms/step) | rollout 0.1856 | in-range R2 0.8826 (t <= 2000) | survives t= 1762.3 [1286, 1228, 1312, 2200, 2190, 1083, 1519, 2927, 2339, 1540]  (no gain 2/off)
+epoch  21/60 | unroll  4 | train 0.01109 | val1 0.00013 | d/psi 0.0634 | lr 9.42e-04 | 30.6s (153 ms/step)
+epoch  22/60 | unroll  4 | train 0.00962 | val1 0.00028 | d/psi 0.0666 | lr 9.12e-04 | 36.6s (183 ms/step) | rollout 0.1265 | in-range R2 0.8834 (t <= 2000) | survives t= 1718.7 [1260, 1201, 1287, 2108, 2113, 1075, 1494, 2775, 2376, 1497]  (no gain 3/off)
+epoch  23/60 | unroll  4 | train 0.00982 | val1 0.00016 | d/psi 0.0625 | lr 8.81e-04 | 34.3s (172 ms/step)
+epoch  24/60 | unroll  4 | train 0.00940 | val1 0.00059 | d/psi 0.0630 | lr 8.50e-04 | 30.7s (154 ms/step) | rollout 0.0793 | in-range R2 0.8805 (t <= 2000) | survives t= 1675.5 [1232, 1180, 1272, 2039, 2053, 1067, 1474, 2672, 2302, 1465]  (no gain 4/off)
+epoch  25/60 | unroll  4 | train 0.00905 | val1 0.00012 | d/psi 0.0650 | lr 8.18e-04 | 30.6s (153 ms/step)
+epoch  26/60 | unroll  4 | train 0.00897 | val1 0.00016 | d/psi 0.0634 | lr 7.86e-04 | 31.0s (155 ms/step) | rollout 0.0446 | in-range R2 0.8831 (t <= 2000) | survives t= 1669.4 [1211, 1168, 1509, 1989, 2008, 1058, 1455, 2600, 2253, 1443]  (no gain 5/off)
+epoch  27/60 | unroll  4 | train 0.00888 | val1 0.00023 | d/psi 0.0611 | lr 7.53e-04 | 30.6s (153 ms/step)
+epoch  28/60 | unroll  4 | train 0.00906 | val1 0.00007 | d/psi 0.0642 | lr 7.20e-04 | 30.6s (153 ms/step) | rollout 0.0131 | in-range R2 0.8817 (t <= 2000) | survives t= 1652.5 [1200, 1163, 1500, 1962, 1979, 1056, 1449, 2557, 2225, 1432]  (no gain 6/off)
+epoch  29/60 | unroll  4 | train 0.00873 | val1 0.00011 | d/psi 0.0652 | lr 6.86e-04 | 30.6s (153 ms/step)
+epoch  30/60 | unroll  4 | train 0.00893 | val1 0.00005 | d/psi 0.0637 | lr 6.53e-04 | 30.5s (153 ms/step) | rollout 0.0033 | in-range R2 0.8913 (t <= 2000) | survives t= 1704.1 [1525, 1157, 1493, 1936, 1956, 1103, 1729, 2523, 2199, 1420]  (no gain 7/off)
+epoch  31/60 | unroll  4 | train 0.00797 | val1 0.00004 | d/psi 0.0628 | lr 6.19e-04 | 36.9s (184 ms/step)
+epoch  32/60 | unroll  4 | train 0.00772 | val1 0.00011 | d/psi 0.0629 | lr 5.85e-04 | 30.8s (154 ms/step) | rollout -0.0172 | in-range R2 0.8895 (t <= 2000) | survives t= 1687.7 [1512, 1152, 1482, 1912, 1936, 1098, 1713, 2489, 2174, 1409]  (no gain 8/off)
+epoch  33/60 | unroll  4 | train 0.00753 | val1 0.00009 | d/psi 0.0632 | lr 5.52e-04 | 30.7s (153 ms/step)
+epoch  34/60 | unroll  4 | train 0.00846 | val1 0.00002 | d/psi 0.0617 | lr 5.19e-04 | 30.6s (153 ms/step) | rollout -0.0395 | in-range R2 0.8875 (t <= 2000) | survives t= 1671.9 [1504, 1146, 1470, 1891, 1917, 1091, 1694, 2458, 2150, 1396]  (no gain 9/off)
+epoch  35/60 | unroll  4 | train 0.00821 | val1 0.00019 | d/psi 0.0643 | lr 4.86e-04 | 30.5s (153 ms/step)
+epoch  36/60 | unroll  4 | train 0.00768 | val1 0.00008 | d/psi 0.0643 | lr 4.54e-04 | 30.6s (153 ms/step) | rollout -0.0514 | in-range R2 0.8844 (t <= 2000) | survives t= 1663.7 [1502, 1147, 1471, 1883, 1909, 1050, 1694, 2448, 2141, 1392]  (no gain 10/off)
+epoch  37/60 | unroll  4 | train 0.00713 | val1 0.00032 | d/psi 0.0645 | lr 4.22e-04 | 30.6s (153 ms/step)
+epoch  38/60 | unroll  4 | train 0.00774 | val1 0.00009 | d/psi 0.0639 | lr 3.90e-04 | 30.5s (153 ms/step) | rollout -0.0526 | in-range R2 0.8915 (t <= 2000) | survives t= 1672.2 [1496, 1145, 1467, 1873, 1901, 1198, 1686, 2437, 2132, 1386]  (no gain 11/off)
+epoch  39/60 | unroll  4 | train 0.00718 | val1 0.00012 | d/psi 0.0650 | lr 3.60e-04 | 30.6s (153 ms/step)
+epoch  40/60 | unroll  4 | train 0.00677 | val1 0.00016 | d/psi 0.0649 | lr 3.30e-04 | 30.6s (153 ms/step) | rollout -0.0634 | in-range R2 0.8840 (t <= 2000) | survives t= 1659.6 [1497, 1149, 1471, 1878, 1901, 1049, 1688, 2443, 2132, 1387]  (no gain 12/off)
+epoch  41/60 | unroll  4 | train 0.00699 | val1 0.00005 | d/psi 0.0633 | lr 3.01e-04 | 30.6s (153 ms/step)
+epoch  42/60 | unroll  4 | train 0.00652 | val1 0.00024 | d/psi 0.0670 | lr 2.73e-04 | 36.0s (180 ms/step) | rollout -0.0687 | in-range R2 0.8836 (t <= 2000) | survives t= 1656.9 [1494, 1151, 1470, 1874, 1898, 1047, 1685, 2437, 2127, 1385]  (no gain 13/off)
+epoch  43/60 | unroll  4 | train 0.00699 | val1 0.00037 | d/psi 0.0638 | lr 2.46e-04 | 32.6s (163 ms/step)
+epoch  44/60 | unroll  4 | train 0.00677 | val1 0.00015 | d/psi 0.0637 | lr 2.20e-04 | 32.6s (163 ms/step) | rollout -0.0730 | in-range R2 0.8831 (t <= 2000) | survives t= 1653.4 [1491, 1150, 1468, 1870, 1893, 1046, 1680, 2431, 2121, 1384]  (no gain 14/off)
+epoch  45/60 | unroll  4 | train 0.00649 | val1 0.00037 | d/psi 0.0638 | lr 1.95e-04 | 31.2s (156 ms/step)
+epoch  46/60 | unroll  4 | train 0.00686 | val1 0.00011 | d/psi 0.0672 | lr 1.72e-04 | 30.6s (153 ms/step) | rollout -0.0746 | in-range R2 0.8833 (t <= 2000) | survives t= 1654.6 [1492, 1152, 1471, 1872, 1893, 1047, 1682, 2434, 2120, 1384]  (no gain 15/off)
+epoch  47/60 | unroll  4 | train 0.00745 | val1 0.00004 | d/psi 0.0656 | lr 1.50e-04 | 30.5s (152 ms/step)
+epoch  48/60 | unroll  4 | train 0.00590 | val1 0.00024 | d/psi 0.0649 | lr 1.29e-04 | 30.4s (152 ms/step) | rollout -0.0751 | in-range R2 0.8840 (t <= 2000) | survives t= 1658.3 [1494, 1156, 1478, 1877, 1894, 1050, 1684, 2441, 2123, 1386]  (no gain 16/off)
+epoch  49/60 | unroll  4 | train 0.00706 | val1 0.00001 | d/psi 0.0649 | lr 1.10e-04 | 32.0s (160 ms/step)
+epoch  50/60 | unroll  4 | train 0.00589 | val1 0.00002 | d/psi 0.0649 | lr 9.17e-05 | 31.9s (160 ms/step) | rollout -0.0710 | in-range R2 0.8793 (t <= 2000) | survives t= 1632.5 [1494, 1158, 1480, 1878, 1894, 1051, 1417, 2442, 2124, 1386]  (no gain 17/off)
+epoch  51/60 | unroll  4 | train 0.00581 | val1 0.00023 | d/psi 0.0640 | lr 7.54e-05 | 32.0s (160 ms/step)
+epoch  52/60 | unroll  4 | train 0.00663 | val1 0.00014 | d/psi 0.0647 | lr 6.07e-05 | 35.8s (179 ms/step) | rollout -0.0706 | in-range R2 0.8801 (t <= 2000) | survives t= 1636.7 [1497, 1163, 1486, 1884, 1898, 1053, 1419, 2449, 2128, 1389]  (no gain 18/off)
+epoch  53/60 | unroll  4 | train 0.00665 | val1 0.00021 | d/psi 0.0639 | lr 4.76e-05 | 30.7s (154 ms/step)
+epoch  54/60 | unroll  4 | train 0.00632 | val1 0.00006 | d/psi 0.0654 | lr 3.62e-05 | 30.7s (154 ms/step) | rollout -0.0702 | in-range R2 0.8804 (t <= 2000) | survives t= 1638.9 [1498, 1165, 1489, 1887, 1899, 1054, 1421, 2454, 2130, 1391]  (no gain 19/off)
+epoch  55/60 | unroll  4 | train 0.00598 | val1 0.00002 | d/psi 0.0635 | lr 2.65e-05 | 30.6s (153 ms/step)
+epoch  56/60 | unroll  4 | train 0.00600 | val1 0.00004 | d/psi 0.0639 | lr 1.85e-05 | 31.8s (159 ms/step) | rollout -0.0713 | in-range R2 0.8802 (t <= 2000) | survives t= 1637.7 [1498, 1164, 1488, 1885, 1898, 1054, 1420, 2452, 2128, 1390]  (no gain 20/off)
+epoch  57/60 | unroll  4 | train 0.00598 | val1 0.00006 | d/psi 0.0662 | lr 1.23e-05 | 36.3s (182 ms/step)
+epoch  58/60 | unroll  4 | train 0.00662 | val1 0.00010 | d/psi 0.0644 | lr 7.80e-06 | 35.9s (179 ms/step) | rollout -0.0720 | in-range R2 0.8802 (t <= 2000) | survives t= 1637.6 [1497, 1165, 1489, 1886, 1897, 1054, 1419, 2452, 2128, 1389]  (no gain 21/off)
+epoch  59/60 | unroll  4 | train 0.00616 | val1 0.00023 | d/psi 0.0662 | lr 5.12e-06 | 36.6s (183 ms/step)
+epoch  60/60 | unroll  4 | train 0.00558 | val1 0.00012 | d/psi 0.0645 | lr 4.23e-06 | 36.7s (184 ms/step) | rollout -0.0719 | in-range R2 0.8804 (t <= 2000) | survives t= 1638.6 [1498, 1167, 1490, 1887, 1898, 1055, 1419, 2454, 2129, 1390]  (no gain 22/off)
+[mem] peak allocated 8.52 GB
+[done] selected epoch 16 (survives to t = 1852.3, in-range R2 0.8612) | total 0.57 h (2036s) | 17,901,252 parameters | saved to /iitjhome/m25ph1006/chc_uno_v1/Work/models/train_t1000/uno_ch_best.pt
+
+Job finished at Tue Oct  6 10:27:37 IST 2026

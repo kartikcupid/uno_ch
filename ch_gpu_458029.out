@@ -1,0 +1,9 @@
+Job started on gpu1 at Fri Oct  2 19:08:00 IST 2026
+Python Path: /iitjhome/m25ph1006/chc_uno_v1/env/bin/python
+CUDA Available Devices: 0
+PyTorch GPU Available: True
+Device Name: NVIDIA A100-SXM4-40GB
+======================= PREDICTION =======================
+[gen] device=cuda:0 NVIDIA A100-SXM4-40GB, l=64, END=1000, 100,000 steps, dt=0.01
+[gen] 20 train + 5 val trajectories over off=[-0.4, -0.2, 0.0, 0.2, 0.4]
+  [train] 20/20 trajectories (28.5s)
