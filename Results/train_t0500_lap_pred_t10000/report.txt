@@ -1,0 +1,259 @@
+==============================================================================
+ UNO / Cahn-Hilliard -- MODEL REPORT   train_t0500_lap_pred_t10000
+ generated 2026-10-08 01:13:15
+==============================================================================
+
+1. TRAINED MODEL (MODEL CARD)
+------------------------------------------------------------------------------
+  checkpoint                /iitjhome/m25ph1006/chc_uno_v1/Work/models/train_t0500_lap/uno_ch_best.pt
+  fingerprint (sha256[:12]) da30a2ce3495
+  trainable parameters      17,901,252
+  precision                 fp32
+  training data ends at     t = 500
+  model variant             Laplacian output  (the head predicts M, the increment is its 5-point Laplacian)
+  evaluated on lattice      l = 128  (box sizes 160, 192, 256)
+  rollout horizon           t = 100 -> 10000
+  test seeds                50
+  ground truth solved on    ['cuda:0 NVIDIA A100-SXM4-40GB']
+
+  architecture
+      width                 40
+      modes                 20
+      n_ref                 64
+      levels                3
+      cond_dim              64
+      conserve_mass         True
+      laplacian_output      True
+
+  checkpoint selection (held-out 128-box validation rollout)
+      select                survival
+      epoch                 26
+      survives              8787.3367
+      per_seed              [3252.7, 4846.1, 9774.5, 10000.0, 10000.0, 10000.0, 10000.0, 10000.0, 10000.0, 10000.0]
+      r2_in_range           0.9876
+      in_range_t1           1000.0
+      rollout               0.9137
+      val1                  0.0005
+
+  training configuration
+      train_end             500
+      npz                   Work/data/test_t0500.npz
+      epochs                60
+      steps_per_epoch       200
+      batch                 128
+      lr                    0.003
+      lr_min                1e-05
+      unroll_stages         [[0.0, 1], [0.08, 2], [0.19, 4]]
+      stage_lr_mult         0.65
+      grad_steps            4
+      weight_decay          0.0001
+      grad_clip             1.0
+      ema_decay             0.999
+      noise                 0.015
+      w_inc                 0.25
+      w_grad                0.25
+      seed                  0
+      train_off             None
+      t_min                 35.0
+      dt_min                1.0
+      dt_max                50.0
+      val_seeds             [31337, 24601, 8675309, 20250, 42424, 90210, 23571, 55555, 48151, 62831]
+      val_t1                10000.0
+      val_every             2
+      patience              0
+      select                survival
+      select_min_delta      1.0
+      conserve_mass         True
+      laplacian_output      True
+
+2. MIXTURE COMPOSITION AND ITS CONSERVATION
+------------------------------------------------------------------------------
+  The system is a binary mixture of two materials, A and B, whose
+  phase separation this model predicts. psi is their composition
+  contrast, psi = c_A - c_B with c_A + c_B = 1, so
+      c_A = (1 + psi)/2        c_B = (1 - psi)/2
+  Cahn-Hilliard is Model B, so <psi> is a constant of motion: the
+  mixture cannot change composition as it separates. The value of
+  <psi> at the final time is therefore the composition the model
+  has ended up simulating, and it should equal the one it started
+  from. Values below are averaged over the test seeds; the end is
+  t = 10000.
+
+          case      A / B at start        A / B at end     shift in A
+     psi0m0.40   30.000 / 70.000     30.000 / 70.000        -0.00000 pp
+     psi0m0.20   40.000 / 60.000     40.000 / 60.000        -0.00000 pp
+     psi0p0.00   50.000 / 50.000     50.000 / 50.000        -0.00000 pp
+     psi0p0.20   60.000 / 40.000     60.000 / 40.000        +0.00000 pp
+     psi0p0.40   70.000 / 30.000     70.000 / 30.000        +0.00000 pp
+          l160   50.000 / 50.000     50.000 / 50.000        +0.00000 pp
+          l192   50.000 / 50.000     50.000 / 50.000        -0.00000 pp
+          l256   50.000 / 50.000     50.000 / 50.000        +0.00000 pp
+
+  largest composition shift              +0.00000 percentage points
+  largest drift |<psi>(t) - psi0|        5.723e-07
+  drift rate d<psi>/dt (linear fit)      4.754e-12 per unit t
+  conserve_mass in this checkpoint       True
+  laplacian_output in this checkpoint    True
+
+  'pp' is percentage points of material A. A shift of +1 pp
+  means the model is separating a mixture 1 % richer in A than
+  the one it was given.
+
+  Convention: psi = c_A - c_B and c_A + c_B = 1, so c_A = (1 +
+  psi)/2 and c_B = (1 - psi)/2: psi = 0 is 50 / 50 and psi =
+  +0.05 is 52.5 % A / 47.5 % B.
+
+  Seed-mean composition over time, A % / B % (the same rows are
+  in composition.csv):
+
+    psi0m0.40   (psi0 = -0.4000)
+           t          truth A / B            UNO A / B
+         100    30.000 / 70.000      30.000 / 70.000
+         500    30.000 / 70.000      30.000 / 70.000
+        1000    30.000 / 70.000      30.000 / 70.000
+        2000    30.000 / 70.000      30.000 / 70.000
+        4000    30.000 / 70.000      30.000 / 70.000
+        6000    30.000 / 70.000      30.000 / 70.000
+        8000    30.000 / 70.000      30.000 / 70.000
+       10000    30.000 / 70.000      30.000 / 70.000
+
+    psi0m0.20   (psi0 = -0.2000)
+           t          truth A / B            UNO A / B
+         100    40.000 / 60.000      40.000 / 60.000
+         500    40.000 / 60.000      40.000 / 60.000
+        1000    40.000 / 60.000      40.000 / 60.000
+        2000    40.000 / 60.000      40.000 / 60.000
+        4000    40.000 / 60.000      40.000 / 60.000
+        6000    40.000 / 60.000      40.000 / 60.000
+        8000    40.000 / 60.000      40.000 / 60.000
+       10000    40.000 / 60.000      40.000 / 60.000
+
+    psi0p0.00   (psi0 = +0.0000)
+           t          truth A / B            UNO A / B
+         100    50.000 / 50.000      50.000 / 50.000
+         500    50.000 / 50.000      50.000 / 50.000
+        1000    50.000 / 50.000      50.000 / 50.000
+        2000    50.000 / 50.000      50.000 / 50.000
+        4000    50.000 / 50.000      50.000 / 50.000
+        6000    50.000 / 50.000      50.000 / 50.000
+        8000    50.000 / 50.000      50.000 / 50.000
+       10000    50.000 / 50.000      50.000 / 50.000
+
+    psi0p0.20   (psi0 = +0.2000)
+           t          truth A / B            UNO A / B
+         100    60.000 / 40.000      60.000 / 40.000
+         500    60.000 / 40.000      60.000 / 40.000
+        1000    60.000 / 40.000      60.000 / 40.000
+        2000    60.000 / 40.000      60.000 / 40.000
+        4000    60.000 / 40.000      60.000 / 40.000
+        6000    60.000 / 40.000      60.000 / 40.000
+        8000    60.000 / 40.000      60.000 / 40.000
+       10000    60.000 / 40.000      60.000 / 40.000
+
+    psi0p0.40   (psi0 = +0.4000)
+           t          truth A / B            UNO A / B
+         100    70.000 / 30.000      70.000 / 30.000
+         500    70.000 / 30.000      70.000 / 30.000
+        1000    70.000 / 30.000      70.000 / 30.000
+        2000    70.000 / 30.000      70.000 / 30.000
+        4000    70.000 / 30.000      70.000 / 30.000
+        6000    70.000 / 30.000      70.000 / 30.000
+        8000    70.000 / 30.000      70.000 / 30.000
+       10000    70.000 / 30.000      70.000 / 30.000
+
+    l160   (psi0 = -0.0000)
+           t          truth A / B            UNO A / B
+         100    50.000 / 50.000      50.000 / 50.000
+         500    50.000 / 50.000      50.000 / 50.000
+        1000    50.000 / 50.000      50.000 / 50.000
+        2000    50.000 / 50.000      50.000 / 50.000
+        4000    50.000 / 50.000      50.000 / 50.000
+        6000    50.000 / 50.000      50.000 / 50.000
+        8000    50.000 / 50.000      50.000 / 50.000
+       10000    50.000 / 50.000      50.000 / 50.000
+
+    l192   (psi0 = -0.0000)
+           t          truth A / B            UNO A / B
+         100    50.000 / 50.000      50.000 / 50.000
+         500    50.000 / 50.000      50.000 / 50.000
+        1000    50.000 / 50.000      50.000 / 50.000
+        2000    50.000 / 50.000      50.000 / 50.000
+        4000    50.000 / 50.000      50.000 / 50.000
+        6000    50.000 / 50.000      50.000 / 50.000
+        8000    50.000 / 50.000      50.000 / 50.000
+       10000    50.000 / 50.000      50.000 / 50.000
+
+    l256   (psi0 = -0.0000)
+           t          truth A / B            UNO A / B
+         100    50.000 / 50.000      50.000 / 50.000
+         500    50.000 / 50.000      50.000 / 50.000
+        1000    50.000 / 50.000      50.000 / 50.000
+        2000    50.000 / 50.000      50.000 / 50.000
+        4000    50.000 / 50.000      50.000 / 50.000
+        6000    50.000 / 50.000      50.000 / 50.000
+        8000    50.000 / 50.000      50.000 / 50.000
+       10000    50.000 / 50.000      50.000 / 50.000
+
+3. SOLVE TIME -- UNO SURROGATE vs GROUND-TRUTH SOLVER
+------------------------------------------------------------------------------
+  ground-truth solver     990,000 explicit steps of dt = 0.01
+                          216.966 s per trajectory
+
+  UNO surrogate           222 autoregressive steps
+                          2.317 s per trajectory (one at a time)
+                          0.745 s per trajectory (batch of 10)
+
+  speedup                 93.7x like-for-like -- quote this one, both unbatched
+                          291.3x with the surrogate batched
+                          4459x fewer time steps
+
+  The baseline is the explicit dt = 0.01 scheme ch.py integrates,
+  not a semi-implicit spectral solver, which would need far fewer
+  steps. Both timings are measured on the device below.
+  device                  cuda
+
+4. SUMMARY -- every case, t = 100 -> 10000, R^2 threshold 0.80
+------------------------------------------------------------------------------
+        case alpha dt_max steps        R2(t_end)  median   best  worst         mean R2   survives to t  never  n pred
+   psi0m0.40  0.35   30.0   316   0.6588 +-0.1970  0.6922  0.930  0.055  0.8049 +-0.1193    5456 +-2557   5/50   0.2783
+   psi0m0.20  0.20   50.0   215   0.6797 +-0.1978  0.7414  0.927  0.061  0.8234 +-0.1322    6632 +-3236  15/50   0.2649
+   psi0p0.00  0.10   50.0   222   0.8279 +-0.1185  0.8644  0.948  0.425  0.9384 +-0.0636    9190 +-1939  39/50   0.3584
+   psi0p0.20  0.10   50.0   222   0.6691 +-0.2580  0.7591  0.940 -0.081  0.8388 +-0.1402    6817 +-3293  16/50   0.2756
+   psi0p0.40  0.10   50.0   222   0.6882 +-0.2065  0.7825  0.930  0.166  0.8341 +-0.1023    6227 +-3087  15/50   0.2894
+        l160  0.10   50.0   222   0.8204 +-0.0902  0.8425  0.943  0.499  0.9316 +-0.0502    9196 +-1548  32/50   0.3678
+        l192  0.10   50.0   222   0.7640 +-0.1156  0.7990  0.882  0.295  0.9144 +-0.0653    8846 +-1913  25/50   0.3918
+        l256  0.10   50.0   222   0.7898 +-0.0674  0.8012  0.891  0.579  0.9198 +-0.0392    9188 +-1287  26/50   0.3820
+
+  R2(t_end): mean +- sd over seeds of each seed's R^2 at the end of
+  the rollout. mean R2: the trajectory mean (mean of R^2 over every
+  rollout time), the measure the best seed is picked by. survives:
+  first time R^2 drops below the threshold (t_end if never); never:
+  seeds that stay above it to t_end. n pred: fitted growth exponent
+  of the zero-crossing L over the late window [t_end/4, t_end].
+
+5. DIAGNOSTICS (reference trajectory, see predict.log)
+------------------------------------------------------------------------------
+  tile invariance            3.889e-06
+  mean_bias_inside_pct       -5.2 %
+  mean_bias_outside_pct      -44.1 %
+  predictability eps_0.0001  t2500 1.00000  t5000 1.00000  t10000 1.00000
+  predictability eps_0.001   t2500 1.00000  t5000 1.00000  t10000 1.00000
+  predictability eps_0.01    t2500 0.99998  t5000 0.99999  t10000 0.99999
+
+6. LOW-k INCREMENT RESPONSE (teacher-forced, per wavenumber shell)
+------------------------------------------------------------------------------
+  gain g = sum Re(conj(dP) dT) / sum |dT|^2 over the Fourier modes of a
+  shell and over the tune seeds, dP = model increment, dT = true increment
+  over dt = 48 from the ground-truth frame at t0. A well-trained model has g
+  ~ 1 in every shell; the base (direct-increment) models showed g = 2.4-3.5
+  in the lowest shell, the 8 modes of the l = 128 box below the l = 64
+  training box's fundamental.
+
+  psi0 = +0.0, l = 128, 10 seed(s); below = |n| in {1, sqrt 2}, first = [2, 2.9], mid = [3, 8], high = rest
+       t0    below    first      mid     high
+      500    0.770    0.917    0.959    0.966
+     1000    0.790    0.923    0.968    1.022
+     2000    0.822    0.893    0.998    1.130
+     5000    0.929    0.729    1.379    1.602
+
+==============================================================================
