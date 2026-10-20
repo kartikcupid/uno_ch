@@ -1,0 +1,340 @@
+==============================================================================
+ UNO / Cahn-Hilliard -- PREDICTION   2026-10-13 14:06:01
+==============================================================================
+[setup] NVIDIA A100-SXM4-40GB, 42.4 GB, torch 2.13.0+cu126
+[setup] device=cuda precision=fp32 dtype=torch.float32
+[setup] label train_t1000_lap_w48_pred_t10000: END = 1000, variant lap, width 48, modes 20, t = 100 -> 10000, save_every 4
+[setup] snapshots main [100.0, 500.0, 1000.0, 2000.0], long [2000.0, 4000.0, 6000.0, 8000.0, 10000.0], tune scores at [2500.0, 5000.0, 7500.0, 10000.0]
+[gt] prewarm to t = 10000 in Work/gt_cache
+[gt]   l=128 off=-0.4 ev=4: 60 trajectories, 0 solved, 60 cached
+[gt]   l=128 off=-0.2 ev=4: 60 trajectories, 0 solved, 60 cached
+[gt]   l=128 off=+0.0 ev=4: 60 trajectories, 0 solved, 60 cached
+[gt]   l=128 off=+0.2 ev=4: 60 trajectories, 0 solved, 60 cached
+[gt]   l=128 off=+0.4 ev=4: 60 trajectories, 0 solved, 60 cached
+[gt]   l=160 off=+0.0 ev=4: 50 trajectories, 0 solved, 50 cached
+[gt]   l=192 off=+0.0 ev=4: 50 trajectories, 0 solved, 50 cached
+[gt]   l=256 off=+0.0 ev=4: 50 trajectories, 0 solved, 50 cached
+[gt] 450 trajectories ready (0 solved now) in 1s
+[model] Work/models/train_t1000_lap_w48/uno_ch_best.pt  25,757,447 parameters  arch={'width': 48, 'modes': 20, 'n_ref': 64, 'levels': 3, 'cond_dim': 64, 'conserve_mass': True, 'laplacian_output': True}
+[model] training metrics: {'select': 'survival', 'survives': 8838.488877658521, 'per_seed': [3652.935988152048, 4731.952788433165, 10000.0, 10000.0, 10000.0, 10000.0, 10000.0, 10000.0, 10000.0, 10000.0], 'r2_in_range': 0.9864950447666402, 'in_range_t1': 2000.0, 'rollout': 0.9420875691890717, 'epoch': 34, 'val1': 4.5249728133159e-05}
+[model] training data ends at t = 1000.0 (checkpoint)
+[eval] offs=[-0.4, -0.2, 0.0, 0.2, 0.4]  50 test seeds=[99999, 54321, 77777, 31415, 27182, 61803, 41421, 57721, 66260, 86420, 20264, 22348, 22911, 27614, 27924, 28096, 29935, 31458, 32393, 33052, 33672, 34617, 35064, 35973, 36643, 36963, 39748, 42192, 43125, 48417, 51170, 52066, 54464, 58713, 60079, 63866, 67517, 68620, 70389, 76145, 76214, 77086, 84331, 85507, 88080, 88971, 92280, 94245, 98029, 98895]
+[rollout] cache Work/rollout_cache/train_t1000_lap_w48_pred_t10000  checkpoint a45df0036465
+
+[tuning] stride schedule for psi0 = -0.4 on 10 validation seed(s) [31337, 24601, 8675309, 20250, 42424, 90210, 23571, 55555, 48151, 62831] (held out of the reported test set)
+[tuning] score = mean R2 at t = 2500, 5000, 7500, 10000; a fixed grid, so schedules of different length stay comparable
+    alpha  dt_max  steps     score  R2(2500)  R2(5000)  R2(7500) R2(10000)
+    0.100    30.0    323    0.8320    0.9294    0.8784    0.7940    0.7263
+    0.100    40.0    264    0.8330    0.9281    0.8777    0.7911    0.7351
+    0.100    45.0    243    0.8722    0.9381    0.9032    0.8378    0.8096
+    0.100    50.0    224    0.8727    0.9376    0.9022    0.8369    0.8142
+    0.200    30.0    319    0.8517    0.9295    0.8853    0.8224    0.7696
+    0.200    40.0    258    0.8515    0.9256    0.8834    0.8191    0.7780
+    0.200    45.0    235    0.8481    0.9252    0.8814    0.8109    0.7750
+    0.200    50.0    217    0.8444    0.9253    0.8785    0.8008    0.7730
+    0.350    30.0    318    0.8146    0.9186    0.8571    0.7747    0.7081
+    0.350    40.0    257    0.8491    0.9235    0.8790    0.8088    0.7849
+    0.350    45.0    235    0.8072    0.9118    0.8533    0.7560    0.7075
+    0.350    50.0    215    0.8019    0.9098    0.8485    0.7496    0.6997
+    0.500    30.0    318    0.8146    0.9186    0.8571    0.7747    0.7081
+    0.500    40.0    254    0.8475    0.9236    0.8792    0.8077    0.7797
+    0.500    45.0    234    0.7948    0.9055    0.8544    0.7445    0.6747
+    0.500    50.0    215    0.8296    0.9114    0.8705    0.7836    0.7528
+    0.700    30.0    318    0.8146    0.9186    0.8571    0.7747    0.7081
+    0.700    40.0    254    0.8475    0.9236    0.8792    0.8077    0.7797
+    0.700    45.0    234    0.7948    0.9055    0.8544    0.7445    0.6747
+    0.700    50.0    215    0.8296    0.9114    0.8705    0.7836    0.7528
+  best: alpha=0.1, dt_max=50 (224 steps) -> score 0.8727
+  [warn] dt_max sits at the top of the grid. Longer strides keep winning because they compound the per-step bias fewer times; do not widen the grid beyond the dt_max the model trained on or the step itself becomes an extrapolation.
+  [warn] alpha sits at the bottom of the grid
+[schedule] psi0 = -0.4: alpha = 0.1, dt_max = 50  (tuned on 10 validation seeds)
+[rollout] psi0m0.40: l=128 psi0=-0.4, 50 seeds, schedule psi0 = -0.4
+[rollout] psi0m0.40: 10/50 seeds (222 steps each)
+[rollout] psi0m0.40: 20/50 seeds (222 steps each)
+[rollout] psi0m0.40: 30/50 seeds (222 steps each)
+[rollout] psi0m0.40: 40/50 seeds (222 steps each)
+[rollout] psi0m0.40: 50/50 seeds (222 steps each)
+
+[tuning] stride schedule for psi0 = -0.2 on 10 validation seed(s) [31337, 24601, 8675309, 20250, 42424, 90210, 23571, 55555, 48151, 62831] (held out of the reported test set)
+[tuning] score = mean R2 at t = 2500, 5000, 7500, 10000; a fixed grid, so schedules of different length stay comparable
+    alpha  dt_max  steps     score  R2(2500)  R2(5000)  R2(7500) R2(10000)
+    0.100    30.0    323    0.9027    0.9629    0.9391    0.8929    0.8159
+    0.100    40.0    264    0.9055    0.9633    0.9396    0.8963    0.8228
+    0.100    45.0    243    0.9057    0.9630    0.9394    0.8947    0.8255
+    0.100    50.0    224    0.9040    0.9621    0.9381    0.8912    0.8244
+    0.200    30.0    319    0.8989    0.9609    0.9365    0.8863    0.8120
+    0.200    40.0    258    0.9022    0.9608    0.9365    0.8902    0.8215
+    0.200    45.0    235    0.9033    0.9610    0.9364    0.8905    0.8251
+    0.200    50.0    217    0.9007    0.9598    0.9350    0.8859    0.8222
+    0.350    30.0    318    0.9018    0.9674    0.9395    0.8883    0.8120
+    0.350    40.0    257    0.9067    0.9688    0.9414    0.8952    0.8213
+    0.350    45.0    235    0.9058    0.9684    0.9413    0.8912    0.8223
+    0.350    50.0    215    0.8695    0.9537    0.9041    0.8459    0.7745
+    0.500    30.0    318    0.9018    0.9674    0.9395    0.8883    0.8120
+    0.500    40.0    254    0.9072    0.9703    0.9433    0.8962    0.8189
+    0.500    45.0    234    0.8927    0.9623    0.9273    0.8787    0.8026
+    0.500    50.0    215    0.8482    0.9446    0.8741    0.8157    0.7584
+    0.700    30.0    318    0.9018    0.9674    0.9395    0.8883    0.8120
+    0.700    40.0    254    0.9072    0.9703    0.9433    0.8962    0.8189
+    0.700    45.0    234    0.8927    0.9623    0.9273    0.8787    0.8026
+    0.700    50.0    215    0.8482    0.9446    0.8741    0.8157    0.7584
+  best: alpha=0.5, dt_max=40 (254 steps) -> score 0.9072
+[schedule] psi0 = -0.2: alpha = 0.5, dt_max = 40  (tuned on 10 validation seeds)
+[rollout] psi0m0.20: l=128 psi0=-0.2, 50 seeds, schedule psi0 = -0.2
+[rollout] psi0m0.20: 10/50 seeds (253 steps each)
+[rollout] psi0m0.20: 20/50 seeds (253 steps each)
+[rollout] psi0m0.20: 30/50 seeds (253 steps each)
+[rollout] psi0m0.20: 40/50 seeds (253 steps each)
+[rollout] psi0m0.20: 50/50 seeds (253 steps each)
+
+[tuning] stride schedule for psi0 = +0.0 on 10 validation seed(s) [31337, 24601, 8675309, 20250, 42424, 90210, 23571, 55555, 48151, 62831] (held out of the reported test set)
+[tuning] score = mean R2 at t = 2500, 5000, 7500, 10000; a fixed grid, so schedules of different length stay comparable
+    alpha  dt_max  steps     score  R2(2500)  R2(5000)  R2(7500) R2(10000)
+    0.100    30.0    323    0.9344    0.9831    0.9681    0.9323    0.8541
+    0.100    40.0    264    0.9434    0.9828    0.9692    0.9430    0.8785
+    0.100    45.0    243    0.9461    0.9826    0.9692    0.9464    0.8864
+    0.100    50.0    224    0.9461    0.9805    0.9671    0.9467    0.8900
+    0.200    30.0    319    0.9013    0.9520    0.9268    0.8988    0.8278
+    0.200    40.0    258    0.9257    0.9705    0.9499    0.9187    0.8639
+    0.200    45.0    235    0.9264    0.9677    0.9474    0.9204    0.8703
+    0.200    50.0    217    0.9275    0.9673    0.9470    0.9218    0.8740
+    0.350    30.0    318    0.8469    0.9182    0.8758    0.8372    0.7565
+    0.350    40.0    257    0.8483    0.9084    0.8695    0.8393    0.7759
+    0.350    45.0    235    0.8482    0.9054    0.8667    0.8393    0.7812
+    0.350    50.0    215    0.8485    0.9037    0.8654    0.8395    0.7853
+    0.500    30.0    318    0.8469    0.9182    0.8758    0.8372    0.7565
+    0.500    40.0    254    0.8201    0.8908    0.8454    0.8046    0.7394
+    0.500    45.0    234    0.7944    0.8682    0.8261    0.7785    0.7048
+    0.500    50.0    215    0.7948    0.8667    0.8248    0.7788    0.7088
+    0.700    30.0    318    0.8469    0.9182    0.8758    0.8372    0.7565
+    0.700    40.0    254    0.8201    0.8908    0.8454    0.8046    0.7394
+    0.700    45.0    234    0.7944    0.8682    0.8261    0.7785    0.7048
+    0.700    50.0    215    0.7948    0.8667    0.8248    0.7788    0.7088
+  best: alpha=0.1, dt_max=45 (243 steps) -> score 0.9461
+  [warn] alpha sits at the bottom of the grid
+[schedule] psi0 = +0.0: alpha = 0.1, dt_max = 45  (tuned on 10 validation seeds)
+[rollout] psi0p0.00: l=128 psi0=+0.0, 50 seeds, schedule psi0 = +0.0
+[rollout] psi0p0.00: 10/50 seeds (240 steps each)
+[rollout] psi0p0.00: 20/50 seeds (240 steps each)
+[rollout] psi0p0.00: 30/50 seeds (240 steps each)
+[rollout] psi0p0.00: 40/50 seeds (240 steps each)
+[rollout] psi0p0.00: 50/50 seeds (240 steps each)
+
+[tuning] stride schedule for psi0 = +0.2 on 10 validation seed(s) [31337, 24601, 8675309, 20250, 42424, 90210, 23571, 55555, 48151, 62831] (held out of the reported test set)
+[tuning] score = mean R2 at t = 2500, 5000, 7500, 10000; a fixed grid, so schedules of different length stay comparable
+    alpha  dt_max  steps     score  R2(2500)  R2(5000)  R2(7500) R2(10000)
+    0.100    30.0    323    0.8726    0.9558    0.9248    0.8592    0.7505
+    0.100    40.0    264    0.8757    0.9555    0.9245    0.8635    0.7592
+    0.100    45.0    243    0.8815    0.9551    0.9259    0.8733    0.7718
+    0.100    50.0    224    0.8792    0.9548    0.9248    0.8702    0.7672
+    0.200    30.0    319    0.8728    0.9452    0.9164    0.8672    0.7623
+    0.200    40.0    258    0.8766    0.9439    0.9179    0.8729    0.7717
+    0.200    45.0    235    0.8761    0.9432    0.9167    0.8734    0.7710
+    0.200    50.0    217    0.8735    0.9427    0.9146    0.8707    0.7660
+    0.350    30.0    318    0.8373    0.9187    0.8798    0.8135    0.7373
+    0.350    40.0    257    0.8397    0.9169    0.8792    0.8189    0.7439
+    0.350    45.0    235    0.8143    0.8933    0.8528    0.7902    0.7208
+    0.350    50.0    215    0.8112    0.8915    0.8507    0.7874    0.7153
+    0.500    30.0    318    0.8373    0.9187    0.8798    0.8135    0.7373
+    0.500    40.0    254    0.8406    0.9159    0.8793    0.8219    0.7452
+    0.500    45.0    234    0.8145    0.8903    0.8515    0.7962    0.7200
+    0.500    50.0    215    0.8111    0.8801    0.8369    0.7999    0.7274
+    0.700    30.0    318    0.8373    0.9187    0.8798    0.8135    0.7373
+    0.700    40.0    254    0.8406    0.9159    0.8793    0.8219    0.7452
+    0.700    45.0    234    0.8145    0.8903    0.8515    0.7962    0.7200
+    0.700    50.0    215    0.8111    0.8801    0.8369    0.7999    0.7274
+  best: alpha=0.1, dt_max=45 (243 steps) -> score 0.8815
+  [warn] alpha sits at the bottom of the grid
+[schedule] psi0 = +0.2: alpha = 0.1, dt_max = 45  (tuned on 10 validation seeds)
+[rollout] psi0p0.20: l=128 psi0=+0.2, 50 seeds, schedule psi0 = +0.2
+[rollout] psi0p0.20: 10/50 seeds (240 steps each)
+[rollout] psi0p0.20: 20/50 seeds (240 steps each)
+[rollout] psi0p0.20: 30/50 seeds (240 steps each)
+[rollout] psi0p0.20: 40/50 seeds (240 steps each)
+[rollout] psi0p0.20: 50/50 seeds (240 steps each)
+
+[tuning] stride schedule for psi0 = +0.4 on 10 validation seed(s) [31337, 24601, 8675309, 20250, 42424, 90210, 23571, 55555, 48151, 62831] (held out of the reported test set)
+[tuning] score = mean R2 at t = 2500, 5000, 7500, 10000; a fixed grid, so schedules of different length stay comparable
+    alpha  dt_max  steps     score  R2(2500)  R2(5000)  R2(7500) R2(10000)
+    0.100    30.0    323    0.8967    0.9641    0.9387    0.8940    0.7901
+    0.100    40.0    264    0.9040    0.9628    0.9374    0.9016    0.8142
+    0.100    45.0    243    0.9040    0.9610    0.9343    0.9002    0.8207
+    0.100    50.0    224    0.8993    0.9589    0.9253    0.8940    0.8189
+    0.200    30.0    319    0.8928    0.9604    0.9299    0.8884    0.7925
+    0.200    40.0    258    0.8923    0.9562    0.9210    0.8808    0.8111
+    0.200    45.0    235    0.8910    0.9548    0.9191    0.8749    0.8151
+    0.200    50.0    217    0.8871    0.9512    0.9147    0.8703    0.8121
+    0.350    30.0    318    0.8693    0.9529    0.9205    0.8461    0.7576
+    0.350    40.0    257    0.8641    0.9443    0.9158    0.8414    0.7548
+    0.350    45.0    235    0.8602    0.9429    0.9130    0.8311    0.7537
+    0.350    50.0    215    0.8619    0.9430    0.9085    0.8336    0.7625
+    0.500    30.0    318    0.8693    0.9529    0.9205    0.8461    0.7576
+    0.500    40.0    254    0.8610    0.9431    0.9155    0.8320    0.7536
+    0.500    45.0    234    0.8450    0.9333    0.8950    0.8073    0.7445
+    0.500    50.0    215    0.8370    0.9306    0.8798    0.8073    0.7303
+    0.700    30.0    318    0.8693    0.9529    0.9205    0.8461    0.7576
+    0.700    40.0    254    0.8610    0.9431    0.9155    0.8320    0.7536
+    0.700    45.0    234    0.8450    0.9333    0.8950    0.8073    0.7445
+    0.700    50.0    215    0.8370    0.9306    0.8798    0.8073    0.7303
+  best: alpha=0.1, dt_max=45 (243 steps) -> score 0.9040
+  [warn] alpha sits at the bottom of the grid
+[schedule] psi0 = +0.4: alpha = 0.1, dt_max = 45  (tuned on 10 validation seeds)
+[rollout] psi0p0.40: l=128 psi0=+0.4, 50 seeds, schedule psi0 = +0.4
+[rollout] psi0p0.40: 10/50 seeds (240 steps each)
+[rollout] psi0p0.40: 20/50 seeds (240 steps each)
+[rollout] psi0p0.40: 30/50 seeds (240 steps each)
+[rollout] psi0p0.40: 40/50 seeds (240 steps each)
+[rollout] psi0p0.40: 50/50 seeds (240 steps each)
+[rollout] l160: l=160 psi0=+0.0, 50 seeds, schedule psi0 = +0.0
+[rollout] l160: 6/50 seeds (240 steps each)
+[rollout] l160: 12/50 seeds (240 steps each)
+[rollout] l160: 18/50 seeds (240 steps each)
+[rollout] l160: 24/50 seeds (240 steps each)
+[rollout] l160: 30/50 seeds (240 steps each)
+[rollout] l160: 36/50 seeds (240 steps each)
+[rollout] l160: 42/50 seeds (240 steps each)
+[rollout] l160: 48/50 seeds (240 steps each)
+[rollout] l160: 50/50 seeds (240 steps each)
+[rollout] l192: l=192 psi0=+0.0, 50 seeds, schedule psi0 = +0.0
+[rollout] l192: 4/50 seeds (240 steps each)
+[rollout] l192: 8/50 seeds (240 steps each)
+[rollout] l192: 12/50 seeds (240 steps each)
+[rollout] l192: 16/50 seeds (240 steps each)
+[rollout] l192: 20/50 seeds (240 steps each)
+[rollout] l192: 24/50 seeds (240 steps each)
+[rollout] l192: 28/50 seeds (240 steps each)
+[rollout] l192: 32/50 seeds (240 steps each)
+[rollout] l192: 36/50 seeds (240 steps each)
+[rollout] l192: 40/50 seeds (240 steps each)
+[rollout] l192: 44/50 seeds (240 steps each)
+[rollout] l192: 48/50 seeds (240 steps each)
+[rollout] l192: 50/50 seeds (240 steps each)
+[rollout] l256: l=256 psi0=+0.0, 50 seeds, schedule psi0 = +0.0
+[rollout] l256: 2/50 seeds (240 steps each)
+[rollout] l256: 4/50 seeds (240 steps each)
+[rollout] l256: 6/50 seeds (240 steps each)
+[rollout] l256: 8/50 seeds (240 steps each)
+[rollout] l256: 10/50 seeds (240 steps each)
+[rollout] l256: 12/50 seeds (240 steps each)
+[rollout] l256: 14/50 seeds (240 steps each)
+[rollout] l256: 16/50 seeds (240 steps each)
+[rollout] l256: 18/50 seeds (240 steps each)
+[rollout] l256: 20/50 seeds (240 steps each)
+[rollout] l256: 22/50 seeds (240 steps each)
+[rollout] l256: 24/50 seeds (240 steps each)
+[rollout] l256: 26/50 seeds (240 steps each)
+[rollout] l256: 28/50 seeds (240 steps each)
+[rollout] l256: 30/50 seeds (240 steps each)
+[rollout] l256: 32/50 seeds (240 steps each)
+[rollout] l256: 34/50 seeds (240 steps each)
+[rollout] l256: 36/50 seeds (240 steps each)
+[rollout] l256: 38/50 seeds (240 steps each)
+[rollout] l256: 40/50 seeds (240 steps each)
+[rollout] l256: 42/50 seeds (240 steps each)
+[rollout] l256: 44/50 seeds (240 steps each)
+[rollout] l256: 46/50 seeds (240 steps each)
+[rollout] l256: 48/50 seeds (240 steps each)
+[rollout] l256: 50/50 seeds (240 steps each)
+
+[summary] train_t1000_lap_w48_pred_t10000: l = 128 (+ boxes), t = 100 -> 10000
+        case  alpha  dt_max  steps            mean R2           final R2     R2 >= thr to t n never   n_pred
+   psi0m0.40   0.10    50.0    222    0.9000 +-0.0997    0.8075 +-0.1866        8074 +-2751  29/50    0.3218
+   psi0m0.20   0.50    40.0    253    0.8461 +-0.1444    0.6923 +-0.2303        7134 +-3217  20/50    0.2992
+   psi0p0.00   0.10    45.0    240    0.9582 +-0.0495    0.8559 +-0.0960        9599 +-1288  43/50    0.3592
+   psi0p0.20   0.10    45.0    240    0.8751 +-0.1151    0.7163 +-0.2034        7591 +-2984  19/50    0.3108
+   psi0p0.40   0.10    45.0    240    0.8805 +-0.0980    0.7481 +-0.1932        7609 +-2839  21/50    0.3151
+        l160   0.10    45.0    240    0.9136 +-0.0455    0.7758 +-0.0891        8695 +-1749  24/50    0.3693
+        l192   0.10    45.0    240    0.9215 +-0.0510    0.7700 +-0.0806        8928 +-1729  21/50    0.3902
+        l256   0.10    45.0    240    0.9221 +-0.0326    0.7783 +-0.0624        9130 +-1164  21/50    0.3845
+  best psi0p0.00 (mean R2 0.9582), worst psi0m0.20 (mean R2 0.8461)
+[diagnostic] reference trajectory gt_l128_off+0.0_seed31337_t100-10000_ev4.npz
+
+[diagnostic] 64 -> 128 TRANSFER
+  tile invariance |model(tile) - tile(model)| = 8.777e-06   PASS
+  one-step R^2 at l=128 (training only ever saw t <= 999)
+         t0     dt     UNO R2  persistence      gain
+/iitjhome/m25ph1006/chc_uno_v1/uno_predict.py:844: UserWarning: The given NumPy array is not writable, and PyTorch does not support non-writable tensors. This means writing to this tensor will result in undefined behavior. You may want to copy the array to protect its data or make it writable before converting it to a tensor. This type of warning will be suppressed for the rest of this program. (Triggered internally at /__w/pytorch/pytorch/torch/csrc/utils/tensor_numpy.cpp:213.)
+  x = torch.as_tensor(np.asarray(f[i0]), dtype=dtype,
+        100    4.0    0.99999      0.99721  +0.00278
+        100   20.0    0.99973      0.94469  +0.05504
+        100   40.0    0.99811      0.83902  +0.15909
+       1000    4.0    1.00000      0.99997  +0.00003   <- extrapolated in t
+       1000   20.0    1.00000      0.99920  +0.00080   <- extrapolated in t
+       1000   40.0    0.99998      0.99686  +0.00312   <- extrapolated in t
+       1900    4.0    1.00000      0.99999  +0.00001   <- extrapolated in t
+       1900   20.0    1.00000      0.99965  +0.00035   <- extrapolated in t
+       1900   40.0    0.99998      0.99861  +0.00137   <- extrapolated in t
+       2731    4.0    1.00000      0.99999  +0.00001   <- extrapolated in t
+       2731   20.0    1.00000      0.99981  +0.00019   <- extrapolated in t
+       2731   40.0    0.99998      0.99926  +0.00073   <- extrapolated in t
+       3730    8.0    1.00000      0.99999  +0.00001   <- extrapolated in t
+       3730   20.0    1.00000      0.99992  +0.00008   <- extrapolated in t
+       3730   40.0    0.99998      0.99968  +0.00029   <- extrapolated in t
+       5094    8.0    1.00000      0.99999  +0.00001   <- extrapolated in t
+       5094   20.0    1.00000      0.99996  +0.00004   <- extrapolated in t
+       5094   40.0    0.99997      0.99982  +0.00015   <- extrapolated in t
+       6956    4.0    1.00000      1.00000  +0.00000   <- extrapolated in t
+       6956   20.0    0.99999      0.99996  +0.00004   <- extrapolated in t
+       6956   40.0    0.99997      0.99983  +0.00014   <- extrapolated in t
+       9500    4.0    1.00000      1.00000  +0.00000   <- extrapolated in t
+       9500   20.0    0.99999      0.99998  +0.00001   <- extrapolated in t
+       9500   40.0    0.99997      0.99992  +0.00004   <- extrapolated in t
+
+[diagnostic] INTRINSIC PREDICTABILITY (exact solver)
+   rel. perturb   R2(t=2500)   R2(t=5000)  R2(t=10000)
+        1.0e-04      1.00000      1.00000      1.00000
+        1.0e-03      1.00000      1.00000      1.00000
+        1.0e-02      0.99998      0.99999      0.99999
+
+[diagnostic] PER-STEP COARSENING BIAS (continuous 'moment' estimator)
+  training data ends at t = 1000 (checkpoint)
+        t    dt   L_truth   dL_truth   dL_model   bias %  in train range
+      100    20     13.95     0.8093     0.8040     -0.6  yes
+      150    20     15.67     0.5438     0.5403     -0.6  yes
+      200    20     16.95     0.4068     0.4039     -0.7  yes
+      300    20     18.76     0.3146     0.3113     -1.0  yes
+      400    20     20.24     0.2784     0.2741     -1.5  yes
+      600    20     22.94     0.2594     0.2558     -1.4  yes
+      800    20     25.19     0.2019     0.1992     -1.3  yes
+     1100    20     27.74     0.1484     0.1457     -1.8  NO -- extrapolated
+     1400    20     29.98     0.1612     0.1582     -1.8  NO -- extrapolated
+     1700    20     32.02     0.1125     0.1106     -1.7  NO -- extrapolated
+     1900    20     33.14     0.1120     0.1101     -1.7  NO -- extrapolated
+     2731    28     37.14     0.0989     0.0954     -3.5  NO -- extrapolated
+     3730    40     39.84     0.0806     0.0793     -1.6  NO -- extrapolated
+     5094    52     42.07     0.0780     0.0795      1.9  NO -- extrapolated
+     6956    48     45.06     0.0776     0.0800      3.1  NO -- extrapolated
+     9500    48     48.26     0.0385     0.0441     14.6  NO -- extrapolated
+  mean bias inside  training range (7 pts): -1.0 %
+  mean bias outside training range (9 pts): +0.8 %
+
+[diagnostic] LOW-k INCREMENT GAIN (teacher-forced, per shell)
+  psi0 = +0.0, l = 128, 10 seed(s), dt = 48; below = the 8 modes |n| = 1, sqrt2 (k < the training box's 2 pi/64), first = |n| in [2, 2.9], mid = [3, 8], high = rest
+       t0    below    first      mid     high
+      500    0.803    0.976    1.001    0.995
+     1000    0.827    0.987    0.998    1.016
+     2000    0.879    1.007    1.012    1.061
+     5000    1.062    1.033    1.210    1.310
+
+[diagnostic] SPEEDUP vs the explicit solver
+  solver: 990,000 explicit steps of dt=0.01 -> 210.1s per trajectory (one at a time, measured on 2000 steps)
+  UNO:    240 autoregressive steps -> 2.914s per trajectory (one at a time)
+                                      1.013s per trajectory (amortised over a batch of 10)
+  speedup 72x like-for-like, 207x batched (4125x fewer steps)
+  quote the like-for-like number: the solver probe is unbatched too. Both compare against the explicit dt=0.01 scheme, not a semi-implicit spectral solver, which would need far fewer steps.
+
+[results] wrote Work/predict/train_t1000_lap_w48_pred_t10000/results.json
+
+[draw] train_t1000_lap_w48_pred_t10000 -> Results/train_t1000_lap_w48_pred_t10000
+[draw]   psi0m0.40: R2(10000) = 0.8075 +- 0.1866, best seed 58713
+[draw]   psi0m0.20: R2(10000) = 0.6923 +- 0.2303, best seed 63866
+[draw]   psi0p0.00: R2(10000) = 0.8559 +- 0.0960, best seed 32393
+[draw]   psi0p0.20: R2(10000) = 0.7163 +- 0.2034, best seed 54321
+[draw]   psi0p0.40: R2(10000) = 0.7481 +- 0.1932, best seed 33052
+[draw]   l160: R2(10000) = 0.7758 +- 0.0891, best seed 34617
+[draw]   l192: R2(10000) = 0.7700 +- 0.0806, best seed 66260
+[draw]   l256: R2(10000) = 0.7783 +- 0.0624, best seed 39748
+[draw] comparison.png: 8 runs
+[draw] done: 1 run folder(s) drawn, README.md lists 8 run(s) in Results/
+
+[done] total 3880.4s | 25,757,447 parameters | report -> Results/train_t1000_lap_w48_pred_t10000
