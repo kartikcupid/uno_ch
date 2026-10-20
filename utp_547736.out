@@ -1,0 +1,1245 @@
+Job started on gpu2 at Fri Oct 16 01:37:02 IST 2026
+Python Path: /iitjhome/m25ph1006/chc_uno_v1/env/bin/python
+CUDA Available Devices: 0
+PyTorch GPU Available: True
+Device Name: NVIDIA A100-SXM4-40GB
+======================= TRAINING =======================
+==============================================================================
+ UNO / Cahn-Hilliard -- TRAINING   2026-10-16 01:37:16
+==============================================================================
+[setup] END = 1000  variant lap  width 12  modes 12  seed 0  data Work/data/test_t1000.npz  validation to t = 10000
+[setup] NVIDIA A100-SXM4-40GB, 42.4 GB, torch 2.13.0+cu126
+[setup] device=cuda:0 precision=fp32 dtype=torch.float32 world_size=1
+[setup] model dir -> /iitjhome/m25ph1006/chc_uno_v1/Work/models/train_t1000_lap_w12m12
+[data] reading Work/data/test_t1000.npz (16.37 GB on disk)
+[data] Work/data/test_t1000.npz -> training data ends at t = 1000  train_X (20, 9990, 64, 64)
+[data] train (20, 9990, 64, 64)  val (5, 9990, 64, 64)  float32, 3.27 GB
+[data] train_off=all -> trajectories [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19] (off=[-0.4, -0.2, 0.0, 0.2, 0.4])
+[data] sign-flip augmentation on, sampling from cuda:0
+[val] l=128 ground truth to t=10000 for seeds [31337, 24601, 8675309, 20250, 42424, 90210, 23571, 55555, 48151, 62831] in Work/gt_cache
+[val] lowk g = increment gain of the 8 lowest modes / the first trained shell at t0 = [1000.0, 2000.0], dt = 48 (logged only, not used for selection)
+[model] 730,107 parameters, modes/level [12, 6, 3, 2], dtype=torch.float32
+[model] conserve_mass=True laplacian_output=True dt_conditioned=True residual_prediction=True
+[data] max trainable dt by unroll: 1 -> 50.0, 2 -> 50.0, 4 -> 50.0
+[resume] no uno_ch_state.pt in /iitjhome/m25ph1006/chc_uno_v1/Work/models/train_t1000_lap_w12m12; training from epoch 1
+[setup] early stopping disabled (patience=0); the no-gain counter is still logged, so the epoch any patience would have fired at can be read straight off the log
+epoch   1/60 | unroll  1 | train 0.13537 | val1 0.02230 | d/psi 0.0299 | lr 3.00e-03 | 25.9s (129 ms/step)
+epoch   2/60 | unroll  1 | train 0.07279 | val1 0.01422 | d/psi 0.0438 | lr 3.00e-03 | 20.4s (102 ms/step) | rollout -0.2938 | in-range R2 0.0949 (t <= 2000) | survives t=  147.6 [147, 147, 145, 147, 149, 150, 147, 149, 145, 149] | lowk g -0.00/-0.00@1000 -0.00/-0.01@2000  <- best
+epoch   3/60 | unroll  1 | train 0.04487 | val1 0.03105 | d/psi 0.0500 | lr 2.99e-03 | 20.4s (102 ms/step)
+epoch   4/60 | unroll  1 | train 0.03518 | val1 0.01323 | d/psi 0.0539 | lr 2.98e-03 | 20.4s (102 ms/step) | rollout -0.4139 | in-range R2 0.1019 (t <= 2000) | survives t=  149.3 [149, 149, 146, 149, 150, 152, 149, 150, 147, 151] | lowk g 0.00/-0.01@1000 -0.00/-0.02@2000  <- best
+[stage] unroll -> 2; max trainable dt 50.0
+epoch   5/60 | unroll  2 | train 0.03745 | val1 0.01665 | d/psi 0.0587 | lr 1.93e-03 | 26.6s (133 ms/step)
+epoch   6/60 | unroll  2 | train 0.03164 | val1 0.01467 | d/psi 0.0600 | lr 1.92e-03 | 25.2s (126 ms/step) | rollout -0.4562 | in-range R2 0.1177 (t <= 2000) | survives t=  155.5 [156, 155, 152, 155, 157, 158, 154, 157, 154, 157] | lowk g 0.06/0.06@1000 0.05/0.05@2000  <- best
+epoch   7/60 | unroll  2 | train 0.02779 | val1 0.01206 | d/psi 0.0590 | lr 1.90e-03 | 25.2s (126 ms/step)
+epoch   8/60 | unroll  2 | train 0.02512 | val1 0.01836 | d/psi 0.0594 | lr 1.88e-03 | 25.2s (126 ms/step) | rollout -0.1678 | in-range R2 0.1767 (t <= 2000) | survives t=  169.0 [170, 167, 163, 170, 172, 171, 164, 172, 170, 170] | lowk g 0.16/0.20@1000 0.16/0.22@2000  <- best
+epoch   9/60 | unroll  2 | train 0.02495 | val1 0.00667 | d/psi 0.0592 | lr 1.86e-03 | 25.2s (126 ms/step)
+epoch  10/60 | unroll  2 | train 0.02216 | val1 0.00676 | d/psi 0.0604 | lr 1.84e-03 | 25.2s (126 ms/step) | rollout 0.1551 | in-range R2 0.3854 (t <= 2000) | survives t=  202.3 [206, 197, 190, 206, 206, 201, 187, 213, 215, 202] | lowk g 0.27/0.36@1000 0.29/0.40@2000  <- best
+epoch  11/60 | unroll  2 | train 0.01838 | val1 0.00599 | d/psi 0.0596 | lr 1.82e-03 | 25.2s (126 ms/step)
+[stage] unroll -> 4; max trainable dt 50.0
+epoch  12/60 | unroll  4 | train 0.02909 | val1 0.00239 | d/psi 0.0623 | lr 1.16e-03 | 35.6s (178 ms/step) | rollout 0.4021 | in-range R2 0.5909 (t <= 2000) | survives t=  282.6 [299, 262, 246, 302, 272, 266, 242, 335, 313, 290] | lowk g 0.39/0.51@1000 0.44/0.59@2000  <- best
+epoch  13/60 | unroll  4 | train 0.02452 | val1 0.00345 | d/psi 0.0633 | lr 1.14e-03 | 34.8s (174 ms/step)
+epoch  14/60 | unroll  4 | train 0.02423 | val1 0.00258 | d/psi 0.0614 | lr 1.12e-03 | 35.0s (175 ms/step) | rollout 0.5084 | in-range R2 0.7399 (t <= 2000) | survives t=  520.7 [483, 446, 402, 481, 634, 485, 480, 584, 473, 738] | lowk g 0.50/0.65@1000 0.57/0.76@2000  <- best
+epoch  15/60 | unroll  4 | train 0.02440 | val1 0.00273 | d/psi 0.0650 | lr 1.10e-03 | 34.8s (174 ms/step)
+epoch  16/60 | unroll  4 | train 0.02234 | val1 0.00238 | d/psi 0.0611 | lr 1.08e-03 | 34.6s (173 ms/step) | rollout 0.0668 | in-range R2 0.8356 (t <= 2000) | survives t= 1823.7 [1131, 1272, 841, 887, 1286, 1913, 890, 1335, 5909, 2771] | lowk g 0.59/0.75@1000 0.67/0.88@2000  <- best
+epoch  17/60 | unroll  4 | train 0.02221 | val1 0.00188 | d/psi 0.0638 | lr 1.05e-03 | 34.7s (173 ms/step)
+epoch  18/60 | unroll  4 | train 0.02156 | val1 0.00074 | d/psi 0.0648 | lr 1.03e-03 | 34.8s (174 ms/step) | rollout 0.1059 | in-range R2 0.8976 (t <= 2000) | survives t= 4433.4 [1434, 1970, 1263, 1894, 5128, 6576, 9470, 4808, 6208, 5582] | lowk g 0.66/0.83@1000 0.75/0.97@2000  <- best
+epoch  19/60 | unroll  4 | train 0.01893 | val1 0.00067 | d/psi 0.0644 | lr 9.99e-04 | 35.0s (175 ms/step)
+epoch  20/60 | unroll  4 | train 0.01994 | val1 0.00108 | d/psi 0.0621 | lr 9.71e-04 | 34.7s (174 ms/step) | rollout 0.0782 | in-range R2 0.9210 (t <= 2000) | survives t= 4080.3 [1756, 2744, 1387, 3017, 4848, 1517, 8590, 4728, 6288, 5928] | lowk g 0.70/0.89@1000 0.81/1.03@2000  (no gain 1/off)
+epoch  21/60 | unroll  4 | train 0.02063 | val1 0.00047 | d/psi 0.0629 | lr 9.42e-04 | 34.7s (173 ms/step)
+epoch  22/60 | unroll  4 | train 0.01842 | val1 0.00102 | d/psi 0.0654 | lr 9.12e-04 | 34.6s (173 ms/step) | rollout 0.0243 | in-range R2 0.8854 (t <= 2000) | survives t= 3967.8 [1868, 888, 1441, 3396, 4848, 1628, 7088, 6088, 6475, 5958] | lowk g 0.73/0.93@1000 0.84/1.07@2000  (no gain 2/off)
+epoch  23/60 | unroll  4 | train 0.01837 | val1 0.00063 | d/psi 0.0618 | lr 8.81e-04 | 34.9s (175 ms/step)
+epoch  24/60 | unroll  4 | train 0.01758 | val1 0.00142 | d/psi 0.0627 | lr 8.50e-04 | 34.9s (174 ms/step) | rollout -0.0067 | in-range R2 0.8904 (t <= 2000) | survives t= 3823.9 [1905, 848, 1468, 3543, 4568, 1661, 6768, 5408, 6274, 5798] | lowk g 0.75/0.96@1000 0.87/1.09@2000  (no gain 3/off)
+epoch  25/60 | unroll  4 | train 0.01761 | val1 0.00052 | d/psi 0.0641 | lr 8.18e-04 | 34.6s (173 ms/step)
+epoch  26/60 | unroll  4 | train 0.01581 | val1 0.00066 | d/psi 0.0626 | lr 7.86e-04 | 34.6s (173 ms/step) | rollout 0.0467 | in-range R2 0.9470 (t <= 2000) | survives t= 4113.2 [1911, 3867, 1483, 3603, 4448, 1686, 6808, 5128, 6291, 5906] | lowk g 0.77/0.98@1000 0.89/1.10@2000  (no gain 4/off)
+epoch  27/60 | unroll  4 | train 0.01557 | val1 0.00090 | d/psi 0.0609 | lr 7.53e-04 | 34.8s (174 ms/step)
+epoch  28/60 | unroll  4 | train 0.01551 | val1 0.00041 | d/psi 0.0636 | lr 7.20e-04 | 35.0s (175 ms/step) | rollout 0.0614 | in-range R2 0.9490 (t <= 2000) | survives t= 4082.8 [1909, 3964, 1491, 3661, 4648, 1706, 6728, 5048, 6176, 5498] | lowk g 0.78/0.99@1000 0.90/1.10@2000  (no gain 5/off)
+epoch  29/60 | unroll  4 | train 0.01481 | val1 0.00051 | d/psi 0.0648 | lr 6.86e-04 | 34.8s (174 ms/step)
+epoch  30/60 | unroll  4 | train 0.01571 | val1 0.00030 | d/psi 0.0629 | lr 6.53e-04 | 34.7s (173 ms/step) | rollout 0.0269 | in-range R2 0.9184 (t <= 2000) | survives t= 4131.6 [1896, 1208, 1495, 6820, 5740, 1726, 6528, 4288, 6197, 5419] | lowk g 0.79/1.00@1000 0.91/1.11@2000  (no gain 6/off)
+epoch  31/60 | unroll  4 | train 0.01399 | val1 0.00025 | d/psi 0.0621 | lr 6.19e-04 | 34.7s (173 ms/step)
+epoch  32/60 | unroll  4 | train 0.01367 | val1 0.00049 | d/psi 0.0624 | lr 5.85e-04 | 34.7s (174 ms/step) | rollout 0.0370 | in-range R2 0.9171 (t <= 2000) | survives t= 4125.3 [1887, 1168, 1498, 6763, 5288, 1738, 6168, 5048, 6331, 5365] | lowk g 0.79/1.00@1000 0.91/1.10@2000  (no gain 7/off)
+epoch  33/60 | unroll  4 | train 0.01340 | val1 0.00042 | d/psi 0.0627 | lr 5.52e-04 | 34.7s (173 ms/step)
+epoch  34/60 | unroll  4 | train 0.01378 | val1 0.00016 | d/psi 0.0612 | lr 5.19e-04 | 34.6s (173 ms/step) | rollout 0.0703 | in-range R2 0.9562 (t <= 2000) | survives t= 4376.9 [1877, 3288, 1501, 6723, 5722, 1747, 5728, 5328, 6530, 5324] | lowk g 0.80/1.01@1000 0.92/1.10@2000  (no gain 8/off)
+epoch  35/60 | unroll  4 | train 0.01377 | val1 0.00078 | d/psi 0.0639 | lr 4.86e-04 | 34.6s (173 ms/step)
+epoch  36/60 | unroll  4 | train 0.01360 | val1 0.00053 | d/psi 0.0636 | lr 4.54e-04 | 34.7s (173 ms/step) | rollout 0.0915 | in-range R2 0.9565 (t <= 2000) | survives t= 4401.8 [1872, 3488, 1507, 6696, 5685, 1765, 5648, 5408, 6641, 5308] | lowk g 0.80/1.01@1000 0.92/1.09@2000  (no gain 9/off)
+epoch  37/60 | unroll  4 | train 0.01234 | val1 0.00104 | d/psi 0.0636 | lr 4.22e-04 | 34.7s (173 ms/step)
+epoch  38/60 | unroll  4 | train 0.01303 | val1 0.00045 | d/psi 0.0630 | lr 3.90e-04 | 34.7s (173 ms/step) | rollout 0.0881 | in-range R2 0.9567 (t <= 2000) | survives t= 4355.7 [1862, 3768, 1510, 6690, 5660, 1769, 5648, 4688, 6683, 5280] | lowk g 0.81/1.01@1000 0.92/1.09@2000  (no gain 10/off)
+epoch  39/60 | unroll  4 | train 0.01237 | val1 0.00059 | d/psi 0.0643 | lr 3.60e-04 | 34.7s (173 ms/step)
+epoch  40/60 | unroll  4 | train 0.01166 | val1 0.00071 | d/psi 0.0640 | lr 3.30e-04 | 34.7s (174 ms/step) | rollout 0.1176 | in-range R2 0.9567 (t <= 2000) | survives t= 4428.2 [1860, 3848, 1516, 6632, 5651, 1772, 5648, 5368, 6755, 5232] | lowk g 0.81/1.01@1000 0.92/1.09@2000  (no gain 11/off)
+epoch  41/60 | unroll  4 | train 0.01182 | val1 0.00030 | d/psi 0.0626 | lr 3.01e-04 | 34.7s (173 ms/step)
+epoch  42/60 | unroll  4 | train 0.01131 | val1 0.00094 | d/psi 0.0661 | lr 2.73e-04 | 34.6s (173 ms/step) | rollout 0.1402 | in-range R2 0.9565 (t <= 2000) | survives t= 4479.6 [1848, 3968, 1520, 6605, 5662, 1766, 5728, 5688, 6793, 5219] | lowk g 0.81/1.01@1000 0.92/1.09@2000  <- best
+epoch  43/60 | unroll  4 | train 0.01161 | val1 0.00109 | d/psi 0.0632 | lr 2.46e-04 | 34.6s (173 ms/step)
+epoch  44/60 | unroll  4 | train 0.01109 | val1 0.00058 | d/psi 0.0630 | lr 2.20e-04 | 34.6s (173 ms/step) | rollout 0.1165 | in-range R2 0.9489 (t <= 2000) | survives t= 4366.3 [1225, 3968, 1523, 6583, 5673, 1771, 5688, 5208, 6808, 5216] | lowk g 0.81/1.01@1000 0.92/1.09@2000  (no gain 1/off)
+epoch  45/60 | unroll  4 | train 0.01102 | val1 0.00138 | d/psi 0.0632 | lr 1.95e-04 | 34.6s (173 ms/step)
+epoch  46/60 | unroll  4 | train 0.01134 | val1 0.00051 | d/psi 0.0661 | lr 1.72e-04 | 34.6s (173 ms/step) | rollout 0.1563 | in-range R2 0.9490 (t <= 2000) | survives t= 4408.5 [1225, 4128, 1528, 6583, 5666, 1768, 6008, 5208, 6766, 5205] | lowk g 0.81/1.01@1000 0.93/1.09@2000  (no gain 2/off)
+epoch  47/60 | unroll  4 | train 0.01199 | val1 0.00027 | d/psi 0.0649 | lr 1.50e-04 | 34.6s (173 ms/step)
+epoch  48/60 | unroll  4 | train 0.01006 | val1 0.00094 | d/psi 0.0641 | lr 1.29e-04 | 34.6s (173 ms/step) | rollout 0.2486 | in-range R2 0.9533 (t <= 2000) | survives t= 5024.6 [1223, 4288, 4888, 6577, 5652, 1773, 6248, 7630, 6767, 5199] | lowk g 0.81/1.02@1000 0.93/1.09@2000  <- best
+epoch  49/60 | unroll  4 | train 0.01158 | val1 0.00008 | d/psi 0.0641 | lr 1.10e-04 | 34.6s (173 ms/step)
+epoch  50/60 | unroll  4 | train 0.01018 | val1 0.00017 | d/psi 0.0642 | lr 9.17e-05 | 34.5s (173 ms/step) | rollout 0.3135 | in-range R2 0.9533 (t <= 2000) | survives t= 5139.4 [1222, 4330, 5518, 6567, 5656, 1780, 6778, 7582, 6767, 5194] | lowk g 0.82/1.02@1000 0.93/1.09@2000  <- best
+epoch  51/60 | unroll  4 | train 0.00994 | val1 0.00052 | d/psi 0.0634 | lr 7.54e-05 | 34.5s (173 ms/step)
+epoch  52/60 | unroll  4 | train 0.01090 | val1 0.00055 | d/psi 0.0642 | lr 6.07e-05 | 34.5s (173 ms/step) | rollout 0.2391 | in-range R2 0.9534 (t <= 2000) | survives t= 4919.4 [1225, 4327, 5288, 6577, 5664, 1783, 6728, 5648, 6777, 5177] | lowk g 0.82/1.02@1000 0.93/1.09@2000  (no gain 1/off)
+epoch  53/60 | unroll  4 | train 0.01078 | val1 0.00082 | d/psi 0.0632 | lr 4.76e-05 | 34.6s (173 ms/step)
+epoch  54/60 | unroll  4 | train 0.01055 | val1 0.00032 | d/psi 0.0645 | lr 3.62e-05 | 34.6s (173 ms/step) | rollout 0.3036 | in-range R2 0.9536 (t <= 2000) | survives t= 5127.3 [1232, 4334, 5248, 6602, 5668, 1788, 6835, 7595, 6792, 5180] | lowk g 0.82/1.02@1000 0.93/1.09@2000  (no gain 2/off)
+epoch  55/60 | unroll  4 | train 0.01024 | val1 0.00013 | d/psi 0.0629 | lr 2.65e-05 | 34.6s (173 ms/step)
+epoch  56/60 | unroll  4 | train 0.01009 | val1 0.00021 | d/psi 0.0634 | lr 1.85e-05 | 34.6s (173 ms/step) | rollout 0.2326 | in-range R2 0.9537 (t <= 2000) | survives t= 4934.8 [1235, 4347, 5288, 6625, 5702, 1796, 6849, 5488, 6821, 5198] | lowk g 0.82/1.02@1000 0.93/1.09@2000  (no gain 3/off)
+epoch  57/60 | unroll  4 | train 0.01003 | val1 0.00026 | d/psi 0.0652 | lr 1.23e-05 | 34.5s (173 ms/step)
+epoch  58/60 | unroll  4 | train 0.01081 | val1 0.00046 | d/psi 0.0638 | lr 7.80e-06 | 34.6s (173 ms/step) | rollout 0.3084 | in-range R2 0.9537 (t <= 2000) | survives t= 5187.8 [1233, 4355, 5608, 6638, 5721, 1795, 6855, 7642, 6839, 5191] | lowk g 0.82/1.02@1000 0.93/1.09@2000  <- best
+epoch  59/60 | unroll  4 | train 0.01040 | val1 0.00046 | d/psi 0.0655 | lr 5.12e-06 | 34.6s (173 ms/step)
+epoch  60/60 | unroll  4 | train 0.00962 | val1 0.00062 | d/psi 0.0638 | lr 4.23e-06 | 34.6s (173 ms/step) | rollout 0.3372 | in-range R2 0.9536 (t <= 2000) | survives t= 5096.9 [1232, 4361, 5740, 6638, 5735, 1796, 6862, 7656, 6851, 4097] | lowk g 0.82/1.02@1000 0.93/1.09@2000  (no gain 1/off)
+[mem] peak allocated 5.15 GB
+[done] selected epoch 58 (survives to t = 5187.8, in-range R2 0.9537) | total 0.59 h (2113s) | 730,107 parameters | saved to /iitjhome/m25ph1006/chc_uno_v1/Work/models/train_t1000_lap_w12m12/uno_ch_best.pt
+
+======================= PREDICTION =======================
+==============================================================================
+ UNO / Cahn-Hilliard -- PREDICTION   2026-10-16 02:16:16
+==============================================================================
+[setup] NVIDIA A100-SXM4-40GB, 42.4 GB, torch 2.13.0+cu126
+[setup] device=cuda precision=fp32 dtype=torch.float32
+[setup] label train_t1000_lap_w12m12_pred_t10000: END = 1000, variant lap, width 12, modes 12, seed 0, t = 100 -> 10000, save_every 4
+[setup] snapshots main [100.0, 500.0, 1000.0, 2000.0], long [2000.0, 4000.0, 6000.0, 8000.0, 10000.0], tune scores at [2500.0, 5000.0, 7500.0, 10000.0]
+[gt] prewarm to t = 10000 in Work/gt_cache
+[gt]   l=128 off=-0.4 ev=4: 60 trajectories, 0 solved, 60 cached
+[gt]   l=128 off=-0.2 ev=4: 60 trajectories, 0 solved, 60 cached
+[gt]   l=128 off=+0.0 ev=4: 60 trajectories, 0 solved, 60 cached
+[gt]   l=128 off=+0.2 ev=4: 60 trajectories, 0 solved, 60 cached
+[gt]   l=128 off=+0.4 ev=4: 60 trajectories, 0 solved, 60 cached
+[gt]   l=160 off=+0.0 ev=4: 50 trajectories, 0 solved, 50 cached
+[gt]   l=192 off=+0.0 ev=4: 50 trajectories, 0 solved, 50 cached
+[gt]   l=256 off=+0.0 ev=4: 50 trajectories, 0 solved, 50 cached
+[gt] 450 trajectories ready (0 solved now) in 0s
+[model] Work/models/train_t1000_lap_w12m12/uno_ch_best.pt  730,107 parameters  arch={'width': 12, 'modes': 12, 'n_ref': 64, 'levels': 3, 'cond_dim': 64, 'conserve_mass': True, 'laplacian_output': True}
+[model] training metrics: {'select': 'survival', 'survives': 5187.820439160809, 'per_seed': [1233.3887150257685, 4355.263143869746, 5608.0, 6637.964480044192, 5720.891945316523, 1795.380756315483, 6855.092726518955, 7641.973446603595, 6839.138457815288, 5191.110720098534], 'r2_in_range': 0.9536966308039062, 'in_range_t1': 2000.0, 'rollout': 0.30836124246120455, 'epoch': 58, 'val1': 0.00045812404575684695}
+[model] training data ends at t = 1000.0 (checkpoint)
+[eval] offs=[-0.4, -0.2, 0.0, 0.2, 0.4]  50 test seeds=[99999, 54321, 77777, 31415, 27182, 61803, 41421, 57721, 66260, 86420, 20264, 22348, 22911, 27614, 27924, 28096, 29935, 31458, 32393, 33052, 33672, 34617, 35064, 35973, 36643, 36963, 39748, 42192, 43125, 48417, 51170, 52066, 54464, 58713, 60079, 63866, 67517, 68620, 70389, 76145, 76214, 77086, 84331, 85507, 88080, 88971, 92280, 94245, 98029, 98895]
+[rollout] cache Work/rollout_cache/train_t1000_lap_w12m12_pred_t10000  checkpoint 1a6117107f1d
+
+[tuning] stride schedule for psi0 = -0.4 on 10 validation seed(s) [31337, 24601, 8675309, 20250, 42424, 90210, 23571, 55555, 48151, 62831] (held out of the reported test set)
+[tuning] score = mean R2 at t = 2500, 5000, 7500, 10000; a fixed grid, so schedules of different length stay comparable
+    alpha  dt_max  steps     score  R2(2500)  R2(5000)  R2(7500) R2(10000)  div
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9268; the others continue
+    0.100    30.0    323    0.4445    0.8194    0.6566    0.4381   -0.1360    1
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9088; the others continue
+    0.100    40.0    264    0.4835    0.8269    0.6605    0.4591   -0.0123    1
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9204; the others continue
+    0.100    45.0    243    0.5036    0.8280    0.6640    0.4770    0.0454    1
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9228; the others continue
+    0.100    50.0    224    0.5153    0.8213    0.6455    0.4831    0.1115    1
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9484; the others continue
+    0.200    30.0    319    0.4237    0.7971    0.6356    0.3992   -0.1370    1
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9368; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9528; the others continue
+    0.200    40.0    258    0.4315    0.7976    0.6254    0.4263   -0.1232    2
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9268; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9444; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 10000; the others continue
+    0.200    45.0    235    0.4239    0.8047    0.6358    0.4462   -0.1913    3
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8984; the others continue
+    0.200    50.0    217    0.5291    0.8160    0.6640    0.5028    0.1337    1
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9796; the others continue
+    0.350    30.0    318    0.4266    0.7958    0.6303    0.4090   -0.1287    1
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9376; the others continue
+    0.350    40.0    257    0.4791    0.7959    0.6408    0.4805   -0.0008    1
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9684; the others continue
+    0.350    45.0    235    0.4974    0.7940    0.6399    0.4924    0.0631    1
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9352; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9928; the others continue
+    0.350    50.0    215    0.4400    0.7844    0.6138    0.4557   -0.0937    2
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9796; the others continue
+    0.500    30.0    318    0.4266    0.7958    0.6303    0.4090   -0.1287    1
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9540; the others continue
+    0.500    40.0    254    0.4785    0.7871    0.6372    0.4748    0.0150    1
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9560; the others continue
+    0.500    45.0    234    0.4865    0.7784    0.6319    0.4840    0.0519    1
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 4756; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9652; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9796; the others continue
+    0.500    50.0    215    0.3633    0.7566    0.4531    0.3172   -0.0736    3
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9796; the others continue
+    0.700    30.0    318    0.4266    0.7958    0.6303    0.4090   -0.1287    1
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9540; the others continue
+    0.700    40.0    254    0.4785    0.7871    0.6372    0.4748    0.0150    1
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9560; the others continue
+    0.700    45.0    234    0.4865    0.7784    0.6319    0.4840    0.0519    1
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 4756; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9652; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9796; the others continue
+    0.700    50.0    215    0.3633    0.7566    0.4531    0.3172   -0.0736    3
+  best: alpha=0.2, dt_max=50 (217 steps) -> score 0.5291
+  [warn] dt_max sits at the top of the grid. Longer strides keep winning because they compound the per-step bias fewer times; do not widen the grid beyond the dt_max the model trained on or the step itself becomes an extrapolation.
+[schedule] psi0 = -0.4: alpha = 0.2, dt_max = 50  (tuned on 10 validation seeds)
+[rollout] psi0m0.40: l=128 psi0=-0.4, 50 seeds, schedule psi0 = -0.4
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9800; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9944; the others continue
+[rollout] psi0m0.40: 10/50 seeds (215 steps each), 2 diverged
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 5048; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8408; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9944; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9992; the others continue
+[rollout] psi0m0.40: 20/50 seeds (215 steps each), 4 diverged
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8936; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9704; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9752; the others continue
+[rollout] psi0m0.40: 30/50 seeds (215 steps each), 3 diverged
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9416; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9752; the others continue
+[rollout] psi0m0.40: 40/50 seeds (215 steps each), 2 diverged
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 4568; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9272; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9416; the others continue
+[rollout] psi0m0.40: 50/50 seeds (215 steps each), 3 diverged
+
+[tuning] stride schedule for psi0 = -0.2 on 10 validation seed(s) [31337, 24601, 8675309, 20250, 42424, 90210, 23571, 55555, 48151, 62831] (held out of the reported test set)
+[tuning] score = mean R2 at t = 2500, 5000, 7500, 10000; a fixed grid, so schedules of different length stay comparable
+    alpha  dt_max  steps     score  R2(2500)  R2(5000)  R2(7500) R2(10000)  div
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8404; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8820; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9396; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9812; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9972; the others continue
+    0.100    30.0    323    0.3807    0.8367    0.6942    0.3858   -0.3940    5
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8288; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8728; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8888; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9888; the others continue
+    0.100    40.0    264    0.4162    0.8309    0.7130    0.4593   -0.3384    4
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 6960; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8720; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9028; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9820; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9864; the others continue
+    0.100    45.0    243    0.3924    0.8451    0.7366    0.3625   -0.3745    5
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 3948; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 6252; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8508; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8556; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8844; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9036; the others continue
+    0.100    50.0    224    0.2646    0.8373    0.5547    0.1802   -0.5139    6
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8876; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8908; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9708; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9996; the others continue
+    0.200    30.0    319    0.4079    0.8493    0.7135    0.4086   -0.3399    4
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8288; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8888; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8928; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9728; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9768; the others continue
+    0.200    40.0    258    0.4106    0.8539    0.7280    0.4675   -0.4071    5
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8080; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8916; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9048; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9268; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9840; the others continue
+    0.200    45.0    235    0.4253    0.8565    0.7319    0.4871   -0.3741    5
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 3560; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 4808; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9080; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9128; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9608; the others continue
+    0.200    50.0    217    0.2774    0.8622    0.3918    0.2066   -0.3508    5
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8804; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8932; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9636; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9956; the others continue
+    0.350    30.0    318    0.3850    0.8530    0.7052    0.4002   -0.4186    4
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8856; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8896; the others continue
+  WARNING: 2 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9656; the others continue
+    0.350    40.0    257    0.4135    0.8421    0.6923    0.4141   -0.2946    4
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8936; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9068; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9552; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9772; the others continue
+    0.350    45.0    235    0.4140    0.8278    0.6772    0.4181   -0.2671    4
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8968; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9112; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9448; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9688; the others continue
+    0.350    50.0    215    0.4134    0.8254    0.6796    0.4312   -0.2824    4
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8804; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8932; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9636; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9956; the others continue
+    0.500    30.0    318    0.3850    0.8530    0.7052    0.4002   -0.4186    4
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7140; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8940; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9420; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9860; the others continue
+    0.500    40.0    254    0.3690    0.8147    0.6647    0.2900   -0.2934    4
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8548; the others continue
+  WARNING: 2 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9032; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9472; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9692; the others continue
+    0.500    45.0    234    0.3779    0.8153    0.6846    0.4228   -0.4112    5
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 4900; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7204; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9124; the others continue
+  WARNING: 2 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9172; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 10000; the others continue
+    0.500    50.0    215    0.2339    0.8029    0.4865    0.1428   -0.4965    6
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8804; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8932; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9636; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9956; the others continue
+    0.700    30.0    318    0.3850    0.8530    0.7052    0.4002   -0.4186    4
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7140; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8940; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9420; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9860; the others continue
+    0.700    40.0    254    0.3690    0.8147    0.6647    0.2900   -0.2934    4
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8548; the others continue
+  WARNING: 2 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9032; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9472; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9692; the others continue
+    0.700    45.0    234    0.3779    0.8153    0.6846    0.4228   -0.4112    5
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 4900; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7204; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9124; the others continue
+  WARNING: 2 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9172; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 10000; the others continue
+    0.700    50.0    215    0.2339    0.8029    0.4865    0.1428   -0.4965    6
+  best: alpha=0.2, dt_max=45 (235 steps) -> score 0.4253
+[schedule] psi0 = -0.2: alpha = 0.2, dt_max = 45  (tuned on 10 validation seeds)
+[rollout] psi0m0.20: l=128 psi0=-0.2, 50 seeds, schedule psi0 = -0.2
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 6000; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9136; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9356; the others continue
+[rollout] psi0m0.20: 10/50 seeds (233 steps each), 3 diverged
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9356; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9444; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9928; the others continue
+[rollout] psi0m0.20: 20/50 seeds (233 steps each), 3 diverged
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9708; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9884; the others continue
+[rollout] psi0m0.20: 30/50 seeds (233 steps each), 2 diverged
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 6672; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8520; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8740; the others continue
+[rollout] psi0m0.20: 40/50 seeds (233 steps each), 3 diverged
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7772; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8256; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9180; the others continue
+[rollout] psi0m0.20: 50/50 seeds (233 steps each), 3 diverged
+
+[tuning] stride schedule for psi0 = +0.0 on 10 validation seed(s) [31337, 24601, 8675309, 20250, 42424, 90210, 23571, 55555, 48151, 62831] (held out of the reported test set)
+[tuning] score = mean R2 at t = 2500, 5000, 7500, 10000; a fixed grid, so schedules of different length stay comparable
+    alpha  dt_max  steps     score  R2(2500)  R2(5000)  R2(7500) R2(10000)  div
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 5396; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8660; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8692; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8852; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9140; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9172; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9620; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9844; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9940; the others continue
+    0.100    30.0    323    0.3238    0.9337    0.8282    0.4113   -0.8780    9
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 4848; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 5608; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7008; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7288; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8008; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8528; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8568; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9048; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9488; the others continue
+    0.100    40.0    264    0.1861    0.9367    0.6795   -0.0111   -0.8608    9
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 5000; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 6000; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 6828; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 6872; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7136; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7356; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8000; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8544; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9204; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9424; none left, stopping
+    0.100    45.0    243    0.0839    0.9413    0.6990   -0.3045   -1.0000   10
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 2796; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 4380; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 4476; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 5484; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 6252; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 6300; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7164; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7548; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8316; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9036; none left, stopping
+    0.100    50.0    224   -0.0562    0.9415    0.3318   -0.4981   -1.0000   10
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 5900; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 6636; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 6828; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8076; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8108; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8876; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9164; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9612; the others continue
+  WARNING: 2 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9964; none left, stopping
+    0.200    30.0    319    0.1803    0.8909    0.7578    0.0727   -1.0000   10
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 5000; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 5568; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 5608; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7048; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7568; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8168; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8528; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9048; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9088; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9488; none left, stopping
+    0.200    40.0    258    0.1244    0.8991    0.6172   -0.0187   -1.0000   10
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 4780; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 4956; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 5264; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 5308; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 6672; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 6892; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7024; the others continue
+  WARNING: 2 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7992; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9356; none left, stopping
+    0.200    45.0    235   -0.0284    0.9131    0.4584   -0.4849   -1.0000   10
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 2500; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 4472; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 4760; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 4856; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 4904; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 5672; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 6296; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 6440; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8984; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9224; none left, stopping
+    0.200    50.0    217   -0.2395    0.7385   -0.0357   -0.6608   -1.0000   10
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 4868; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 6660; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7908; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8900; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8932; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9028; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9252; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9924; the others continue
+    0.350    30.0    318    0.1955    0.8565    0.5444    0.1571   -0.7760    8
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 3936; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 4576; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 5016; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 5416; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 5576; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 6616; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 6856; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8736; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9216; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 10000; none left, stopping
+    0.350    40.0    257   -0.0740    0.8465    0.3765   -0.5189   -1.0000   10
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 4316; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 4800; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 4932; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 4976; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 5460; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 6252; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 6780; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7924; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9332; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9508; none left, stopping
+    0.350    45.0    235   -0.1589    0.8464    0.0263   -0.5082   -1.0000   10
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 2920; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 3016; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 3112; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 3976; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 4552; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 5080; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 5800; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 5944; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8920; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9304; none left, stopping
+    0.350    50.0    215   -0.2380    0.8464   -0.1377   -0.6609   -1.0000   10
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 4868; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 6660; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7908; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8900; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8932; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9028; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9252; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9924; the others continue
+    0.500    30.0    318    0.1955    0.8565    0.5444    0.1571   -0.7760    8
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 4060; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 4540; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 5060; the others continue
+  WARNING: 2 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 5460; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 6340; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 6900; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8020; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8420; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9180; none left, stopping
+    0.500    40.0    254   -0.0671    0.8525    0.3897   -0.5106   -1.0000   10
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 4280; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 4852; the others continue
+  WARNING: 2 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 4984; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 5468; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 5820; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 6876; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8680; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9164; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9296; none left, stopping
+    0.500    45.0    234   -0.1463    0.8528    0.0620   -0.4999   -1.0000   10
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 2000; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 2644; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 2932; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 3892; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 4372; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 4804; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 5092; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7060; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7684; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8500; none left, stopping
+    0.500    50.0    215   -0.3230    0.6781   -0.3095   -0.6606   -1.0000   10
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 4868; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 6660; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7908; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8900; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8932; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9028; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9252; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9924; the others continue
+    0.700    30.0    318    0.1955    0.8565    0.5444    0.1571   -0.7760    8
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 4060; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 4540; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 5060; the others continue
+  WARNING: 2 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 5460; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 6340; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 6900; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8020; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8420; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9180; none left, stopping
+    0.700    40.0    254   -0.0671    0.8525    0.3897   -0.5106   -1.0000   10
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 4280; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 4852; the others continue
+  WARNING: 2 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 4984; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 5468; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 5820; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 6876; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8680; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9164; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9296; none left, stopping
+    0.700    45.0    234   -0.1463    0.8528    0.0620   -0.4999   -1.0000   10
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 2000; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 2644; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 2932; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 3892; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 4372; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 4804; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 5092; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7060; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7684; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8500; none left, stopping
+    0.700    50.0    215   -0.3230    0.6781   -0.3095   -0.6606   -1.0000   10
+  best: alpha=0.1, dt_max=30 (323 steps) -> score 0.3238
+  [warn] alpha sits at the bottom of the grid
+[schedule] psi0 = +0.0: alpha = 0.1, dt_max = 30  (tuned on 10 validation seeds)
+[rollout] psi0p0.00: l=128 psi0=+0.0, 50 seeds, schedule psi0 = +0.0
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 4180; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 6676; the others continue
+  WARNING: 2 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7316; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7380; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7508; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7796; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7828; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8948; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9172; none left, stopping
+[rollout] psi0p0.00: 10/50 seeds (320 steps each), 10 diverged
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7060; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7444; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8244; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8308; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8436; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8788; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8884; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9044; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9492; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9620; none left, stopping
+[rollout] psi0p0.00: 20/50 seeds (320 steps each), 10 diverged
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7508; the others continue
+  WARNING: 2 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8564; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8692; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8756; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8916; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9012; the others continue
+[rollout] psi0p0.00: 30/50 seeds (320 steps each), 7 diverged
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 6740; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7060; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7412; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7828; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7924; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8000; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8084; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8468; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9044; the others continue
+[rollout] psi0p0.00: 40/50 seeds (320 steps each), 9 diverged
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 6804; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7060; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7956; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8596; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9108; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9460; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9556; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9588; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9780; the others continue
+[rollout] psi0p0.00: 50/50 seeds (320 steps each), 9 diverged
+
+[tuning] stride schedule for psi0 = +0.2 on 10 validation seed(s) [31337, 24601, 8675309, 20250, 42424, 90210, 23571, 55555, 48151, 62831] (held out of the reported test set)
+[tuning] score = mean R2 at t = 2500, 5000, 7500, 10000; a fixed grid, so schedules of different length stay comparable
+    alpha  dt_max  steps     score  R2(2500)  R2(5000)  R2(7500) R2(10000)  div
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8692; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9524; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9844; the others continue
+    0.100    30.0    323    0.4582    0.8937    0.7432    0.4773   -0.2813    3
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7128; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7528; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7728; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7768; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7808; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8408; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9488; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9528; the others continue
+    0.100    40.0    264    0.3247    0.8981    0.7557    0.3703   -0.7253    8
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 2032; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 2076; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 6212; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 6388; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 6916; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7444; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7500; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9292; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9952; the others continue
+    0.100    45.0    243   -0.1011    0.5149    0.4108   -0.4881   -0.8421    9
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 1740; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 3036; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 5868; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 6972; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7452; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7548; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7836; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7932; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8988; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9804; none left, stopping
+    0.100    50.0    224   -0.0164    0.7059    0.4176   -0.1889   -1.0000   10
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8684; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8940; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9452; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9708; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9932; the others continue
+    0.200    30.0    319    0.4500    0.9206    0.7878    0.4970   -0.4052    5
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 6048; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7048; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7568; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7728; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8328; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9288; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9968; the others continue
+    0.200    40.0    258    0.3435    0.9052    0.7843    0.3078   -0.6233    7
+  WARNING: 2 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 1788; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 2052; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 5616; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 6012; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7772; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7904; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9312; the others continue
+    0.200    45.0    235   -0.0491    0.3483    0.2896   -0.1507   -0.6836    8
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 1832; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 3416; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 4280; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 4664; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 5528; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7064; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7256; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7784; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9224; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9752; none left, stopping
+    0.200    50.0    217   -0.1819    0.7065    0.0784   -0.5125   -1.0000   10
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8260; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8772; the others continue
+    0.350    30.0    318    0.5247    0.9081    0.7808    0.5023   -0.0924    2
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 3536; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 4456; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 6576; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7376; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9216; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9616; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9816; the others continue
+    0.350    40.0    257    0.1757    0.8913    0.4262   -0.0508   -0.5639    7
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 1456; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 1500; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 1544; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 1984; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 2424; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 6120; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 6956; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7440; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9992; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 10000; none left, stopping
+    0.350    45.0    235   -0.4477   -0.0539   -0.0823   -0.6548   -1.0000   10
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 856; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 1144; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 1192; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 1240; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 1336; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 1432; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 1480; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 1816; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 2296; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 6000; none left, stopping
+    0.350    50.0    215   -0.9086   -0.8134   -0.8211   -1.0000   -1.0000   10
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8260; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8772; the others continue
+    0.500    30.0    318    0.5247    0.9081    0.7808    0.5023   -0.0924    2
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 1700; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 2540; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 2860; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 5000; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7980; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8540; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8820; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9260; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9500; the others continue
+    0.500    40.0    254   -0.0242    0.7097    0.0850   -0.0426   -0.8488    9
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 1376; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 1684; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 1816; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 2212; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 2344; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 2476; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 2652; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 2872; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 3092; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 6744; none left, stopping
+    0.500    45.0    234   -0.7797   -0.2945   -0.8244   -1.0000   -1.0000   10
+  WARNING: 2 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 1000; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 1012; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 1108; the others continue
+  WARNING: 2 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 1300; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 1348; the others continue
+  WARNING: 2 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 1396; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 2404; none left, stopping
+    0.500    50.0    215   -1.0000   -1.0000   -1.0000   -1.0000   -1.0000   10
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8260; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8772; the others continue
+    0.700    30.0    318    0.5247    0.9081    0.7808    0.5023   -0.0924    2
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 1700; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 2540; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 2860; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 5000; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7980; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8540; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8820; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9260; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9500; the others continue
+    0.700    40.0    254   -0.0242    0.7097    0.0850   -0.0426   -0.8488    9
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 1376; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 1684; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 1816; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 2212; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 2344; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 2476; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 2652; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 2872; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 3092; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 6744; none left, stopping
+    0.700    45.0    234   -0.7797   -0.2945   -0.8244   -1.0000   -1.0000   10
+  WARNING: 2 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 1000; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 1012; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 1108; the others continue
+  WARNING: 2 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 1300; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 1348; the others continue
+  WARNING: 2 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 1396; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 2404; none left, stopping
+    0.700    50.0    215   -1.0000   -1.0000   -1.0000   -1.0000   -1.0000   10
+  best: alpha=0.35, dt_max=30 (318 steps) -> score 0.5247
+[schedule] psi0 = +0.2: alpha = 0.35, dt_max = 30  (tuned on 10 validation seeds)
+[rollout] psi0p0.20: l=128 psi0=+0.2, 50 seeds, schedule psi0 = +0.2
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9124; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9380; the others continue
+[rollout] psi0p0.20: 10/50 seeds (316 steps each), 2 diverged
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8964; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9668; the others continue
+[rollout] psi0p0.20: 20/50 seeds (316 steps each), 2 diverged
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9508; the others continue
+[rollout] psi0p0.20: 30/50 seeds (316 steps each), 1 diverged
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8548; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8580; the others continue
+[rollout] psi0p0.20: 40/50 seeds (316 steps each), 2 diverged
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8580; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9060; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9188; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9636; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9860; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9956; the others continue
+[rollout] psi0p0.20: 50/50 seeds (316 steps each), 6 diverged
+
+[tuning] stride schedule for psi0 = +0.4 on 10 validation seed(s) [31337, 24601, 8675309, 20250, 42424, 90210, 23571, 55555, 48151, 62831] (held out of the reported test set)
+[tuning] score = mean R2 at t = 2500, 5000, 7500, 10000; a fixed grid, so schedules of different length stay comparable
+    alpha  dt_max  steps     score  R2(2500)  R2(5000)  R2(7500) R2(10000)  div
+    0.100    30.0    323    0.4688    0.8345    0.6553    0.4466   -0.0612    0
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8288; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9248; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9448; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9568; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9968; the others continue
+    0.100    40.0    264    0.3962    0.8441    0.6766    0.4888   -0.4246    5
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7708; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7884; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8104; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8456; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8500; the others continue
+  WARNING: 2 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9292; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9600; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9864; the others continue
+    0.100    45.0    243    0.2850    0.8467    0.6814    0.5006   -0.8887    9
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 2364; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 5484; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7308; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7692; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7788; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7836; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7980; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8000; the others continue
+  WARNING: 2 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9564; none left, stopping
+    0.100    50.0    224    0.0632    0.6621    0.5289    0.0620   -1.0000   10
+    0.200    30.0    319    0.4666    0.8378    0.6546    0.4340   -0.0602    0
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8848; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9488; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9568; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9728; the others continue
+  WARNING: 2 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9768; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9968; the others continue
+    0.200    40.0    258    0.3344    0.8437    0.6701    0.4736   -0.6498    7
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 1920; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 6000; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7684; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7948; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8564; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8784; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8916; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9708; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9796; the others continue
+    0.200    45.0    235    0.1205    0.6635    0.5026    0.2014   -0.8855    9
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 1880; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 5480; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7112; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7448; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7736; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7880; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8000; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8024; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9416; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9560; none left, stopping
+    0.200    50.0    217    0.0221    0.6632    0.5102   -0.0848   -1.0000   10
+    0.350    30.0    318    0.4578    0.8368    0.6413    0.4153   -0.0622    0
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8616; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8896; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8976; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9176; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9216; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9456; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9976; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 10000; the others continue
+    0.350    40.0    257    0.2985    0.8367    0.6692    0.4665   -0.7783    8
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7792; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8000; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8100; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8540; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8716; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9068; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9552; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9728; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 10000; the others continue
+    0.350    45.0    235    0.2762    0.8351    0.6728    0.4801   -0.8832    9
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 952; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 1144; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 2392; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 2584; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 3016; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 5512; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7336; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7912; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7960; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9064; none left, stopping
+    0.350    50.0    215   -0.3676    0.2565   -0.1788   -0.5480   -1.0000   10
+    0.500    30.0    318    0.4578    0.8368    0.6413    0.4153   -0.0622    0
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8380; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8460; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8700; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9300; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9340; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9380; the others continue
+    0.500    40.0    254    0.3625    0.8387    0.6682    0.4738   -0.5309    6
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 1464; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 1948; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 2476; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7712; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8636; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8680; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9076; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9120; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9648; the others continue
+    0.500    45.0    234   -0.1154    0.2737    0.1482    0.0012   -0.8848    9
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 1300; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 1348; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 2500; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 4372; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 6964; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7444; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7780; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8308; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9748; the others continue
+    0.500    50.0    215   -0.2389    0.2780    0.0305   -0.3830   -0.8812    9
+    0.700    30.0    318    0.4578    0.8368    0.6413    0.4153   -0.0622    0
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8380; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8460; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8700; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9300; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9340; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9380; the others continue
+    0.700    40.0    254    0.3625    0.8387    0.6682    0.4738   -0.5309    6
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 1464; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 1948; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 2476; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7712; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8636; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8680; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9076; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9120; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9648; the others continue
+    0.700    45.0    234   -0.1154    0.2737    0.1482    0.0012   -0.8848    9
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 1300; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 1348; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 2500; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 4372; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 6964; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7444; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7780; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8308; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9748; the others continue
+    0.700    50.0    215   -0.2389    0.2780    0.0305   -0.3830   -0.8812    9
+  best: alpha=0.1, dt_max=30 (323 steps) -> score 0.4688
+  [warn] alpha sits at the bottom of the grid
+[schedule] psi0 = +0.4: alpha = 0.1, dt_max = 30  (tuned on 10 validation seeds)
+[rollout] psi0p0.40: l=128 psi0=+0.4, 50 seeds, schedule psi0 = +0.4
+[rollout] psi0p0.40: 10/50 seeds (320 steps each)
+[rollout] psi0p0.40: 20/50 seeds (320 steps each)
+[rollout] psi0p0.40: 30/50 seeds (320 steps each)
+[rollout] psi0p0.40: 40/50 seeds (320 steps each)
+[rollout] psi0p0.40: 50/50 seeds (320 steps each)
+[rollout] l160: l=160 psi0=+0.0, 50 seeds, schedule psi0 = +0.0
+  WARNING: 1 of 6 rollout(s) diverged (non-finite or |psi| > 10) at t = 5652; the others continue
+  WARNING: 1 of 6 rollout(s) diverged (non-finite or |psi| > 10) at t = 5780; the others continue
+  WARNING: 1 of 6 rollout(s) diverged (non-finite or |psi| > 10) at t = 6388; the others continue
+  WARNING: 1 of 6 rollout(s) diverged (non-finite or |psi| > 10) at t = 7252; the others continue
+  WARNING: 1 of 6 rollout(s) diverged (non-finite or |psi| > 10) at t = 7892; the others continue
+  WARNING: 1 of 6 rollout(s) diverged (non-finite or |psi| > 10) at t = 8180; none left, stopping
+[rollout] l160: 6/50 seeds (320 steps each), 6 diverged
+  WARNING: 1 of 6 rollout(s) diverged (non-finite or |psi| > 10) at t = 5268; the others continue
+  WARNING: 1 of 6 rollout(s) diverged (non-finite or |psi| > 10) at t = 6772; the others continue
+  WARNING: 1 of 6 rollout(s) diverged (non-finite or |psi| > 10) at t = 7092; the others continue
+  WARNING: 1 of 6 rollout(s) diverged (non-finite or |psi| > 10) at t = 7316; the others continue
+  WARNING: 1 of 6 rollout(s) diverged (non-finite or |psi| > 10) at t = 7764; the others continue
+  WARNING: 1 of 6 rollout(s) diverged (non-finite or |psi| > 10) at t = 7924; none left, stopping
+[rollout] l160: 12/50 seeds (320 steps each), 6 diverged
+  WARNING: 1 of 6 rollout(s) diverged (non-finite or |psi| > 10) at t = 3700; the others continue
+  WARNING: 1 of 6 rollout(s) diverged (non-finite or |psi| > 10) at t = 5300; the others continue
+  WARNING: 1 of 6 rollout(s) diverged (non-finite or |psi| > 10) at t = 5748; the others continue
+  WARNING: 1 of 6 rollout(s) diverged (non-finite or |psi| > 10) at t = 6036; the others continue
+  WARNING: 1 of 6 rollout(s) diverged (non-finite or |psi| > 10) at t = 6868; the others continue
+  WARNING: 1 of 6 rollout(s) diverged (non-finite or |psi| > 10) at t = 9876; none left, stopping
+[rollout] l160: 18/50 seeds (320 steps each), 6 diverged
+  WARNING: 1 of 6 rollout(s) diverged (non-finite or |psi| > 10) at t = 4852; the others continue
+  WARNING: 1 of 6 rollout(s) diverged (non-finite or |psi| > 10) at t = 6644; the others continue
+  WARNING: 1 of 6 rollout(s) diverged (non-finite or |psi| > 10) at t = 7156; the others continue
+  WARNING: 1 of 6 rollout(s) diverged (non-finite or |psi| > 10) at t = 7252; the others continue
+  WARNING: 1 of 6 rollout(s) diverged (non-finite or |psi| > 10) at t = 8340; the others continue
+  WARNING: 1 of 6 rollout(s) diverged (non-finite or |psi| > 10) at t = 8788; none left, stopping
+[rollout] l160: 24/50 seeds (320 steps each), 6 diverged
+  WARNING: 1 of 6 rollout(s) diverged (non-finite or |psi| > 10) at t = 4884; the others continue
+  WARNING: 1 of 6 rollout(s) diverged (non-finite or |psi| > 10) at t = 5908; the others continue
+  WARNING: 2 of 6 rollout(s) diverged (non-finite or |psi| > 10) at t = 6292; the others continue
+  WARNING: 1 of 6 rollout(s) diverged (non-finite or |psi| > 10) at t = 6772; the others continue
+  WARNING: 1 of 6 rollout(s) diverged (non-finite or |psi| > 10) at t = 7892; none left, stopping
+[rollout] l160: 30/50 seeds (320 steps each), 6 diverged
+  WARNING: 1 of 6 rollout(s) diverged (non-finite or |psi| > 10) at t = 5108; the others continue
+  WARNING: 1 of 6 rollout(s) diverged (non-finite or |psi| > 10) at t = 6388; the others continue
+  WARNING: 1 of 6 rollout(s) diverged (non-finite or |psi| > 10) at t = 7764; the others continue
+  WARNING: 1 of 6 rollout(s) diverged (non-finite or |psi| > 10) at t = 8052; the others continue
+  WARNING: 1 of 6 rollout(s) diverged (non-finite or |psi| > 10) at t = 8180; the others continue
+  WARNING: 1 of 6 rollout(s) diverged (non-finite or |psi| > 10) at t = 8980; none left, stopping
+[rollout] l160: 36/50 seeds (320 steps each), 6 diverged
+  WARNING: 1 of 6 rollout(s) diverged (non-finite or |psi| > 10) at t = 6484; the others continue
+  WARNING: 1 of 6 rollout(s) diverged (non-finite or |psi| > 10) at t = 6548; the others continue
+  WARNING: 1 of 6 rollout(s) diverged (non-finite or |psi| > 10) at t = 6580; the others continue
+  WARNING: 1 of 6 rollout(s) diverged (non-finite or |psi| > 10) at t = 7028; the others continue
+  WARNING: 1 of 6 rollout(s) diverged (non-finite or |psi| > 10) at t = 7508; the others continue
+  WARNING: 1 of 6 rollout(s) diverged (non-finite or |psi| > 10) at t = 7636; none left, stopping
+[rollout] l160: 42/50 seeds (320 steps each), 6 diverged
+  WARNING: 1 of 6 rollout(s) diverged (non-finite or |psi| > 10) at t = 5844; the others continue
+  WARNING: 1 of 6 rollout(s) diverged (non-finite or |psi| > 10) at t = 6164; the others continue
+  WARNING: 1 of 6 rollout(s) diverged (non-finite or |psi| > 10) at t = 7028; the others continue
+  WARNING: 1 of 6 rollout(s) diverged (non-finite or |psi| > 10) at t = 8340; the others continue
+  WARNING: 1 of 6 rollout(s) diverged (non-finite or |psi| > 10) at t = 8628; the others continue
+  WARNING: 1 of 6 rollout(s) diverged (non-finite or |psi| > 10) at t = 9268; none left, stopping
+[rollout] l160: 48/50 seeds (320 steps each), 6 diverged
+  WARNING: 1 of 2 rollout(s) diverged (non-finite or |psi| > 10) at t = 7412; the others continue
+  WARNING: 1 of 2 rollout(s) diverged (non-finite or |psi| > 10) at t = 8500; none left, stopping
+[rollout] l160: 50/50 seeds (320 steps each), 2 diverged
+[rollout] l192: l=192 psi0=+0.0, 50 seeds, schedule psi0 = +0.0
+  WARNING: 1 of 4 rollout(s) diverged (non-finite or |psi| > 10) at t = 5652; the others continue
+  WARNING: 1 of 4 rollout(s) diverged (non-finite or |psi| > 10) at t = 6292; the others continue
+  WARNING: 1 of 4 rollout(s) diverged (non-finite or |psi| > 10) at t = 6420; the others continue
+  WARNING: 1 of 4 rollout(s) diverged (non-finite or |psi| > 10) at t = 7668; none left, stopping
+[rollout] l192: 4/50 seeds (320 steps each), 4 diverged
+  WARNING: 1 of 4 rollout(s) diverged (non-finite or |psi| > 10) at t = 5268; the others continue
+  WARNING: 1 of 4 rollout(s) diverged (non-finite or |psi| > 10) at t = 5428; the others continue
+  WARNING: 1 of 4 rollout(s) diverged (non-finite or |psi| > 10) at t = 6260; the others continue
+  WARNING: 1 of 4 rollout(s) diverged (non-finite or |psi| > 10) at t = 6804; none left, stopping
+[rollout] l192: 8/50 seeds (320 steps each), 4 diverged
+  WARNING: 1 of 4 rollout(s) diverged (non-finite or |psi| > 10) at t = 2932; the others continue
+  WARNING: 1 of 4 rollout(s) diverged (non-finite or |psi| > 10) at t = 5588; the others continue
+  WARNING: 1 of 4 rollout(s) diverged (non-finite or |psi| > 10) at t = 5780; the others continue
+  WARNING: 1 of 4 rollout(s) diverged (non-finite or |psi| > 10) at t = 6772; none left, stopping
+[rollout] l192: 12/50 seeds (320 steps each), 4 diverged
+  WARNING: 1 of 4 rollout(s) diverged (non-finite or |psi| > 10) at t = 5748; the others continue
+  WARNING: 1 of 4 rollout(s) diverged (non-finite or |psi| > 10) at t = 6260; the others continue
+  WARNING: 2 of 4 rollout(s) diverged (non-finite or |psi| > 10) at t = 6292; none left, stopping
+[rollout] l192: 16/50 seeds (320 steps each), 4 diverged
+  WARNING: 1 of 4 rollout(s) diverged (non-finite or |psi| > 10) at t = 5492; the others continue
+  WARNING: 1 of 4 rollout(s) diverged (non-finite or |psi| > 10) at t = 5652; the others continue
+  WARNING: 1 of 4 rollout(s) diverged (non-finite or |psi| > 10) at t = 6964; the others continue
+  WARNING: 1 of 4 rollout(s) diverged (non-finite or |psi| > 10) at t = 7476; none left, stopping
+[rollout] l192: 20/50 seeds (320 steps each), 4 diverged
+  WARNING: 1 of 4 rollout(s) diverged (non-finite or |psi| > 10) at t = 5428; the others continue
+  WARNING: 1 of 4 rollout(s) diverged (non-finite or |psi| > 10) at t = 6516; the others continue
+  WARNING: 1 of 4 rollout(s) diverged (non-finite or |psi| > 10) at t = 6708; the others continue
+  WARNING: 1 of 4 rollout(s) diverged (non-finite or |psi| > 10) at t = 6932; none left, stopping
+[rollout] l192: 24/50 seeds (320 steps each), 4 diverged
+  WARNING: 1 of 4 rollout(s) diverged (non-finite or |psi| > 10) at t = 4628; the others continue
+  WARNING: 1 of 4 rollout(s) diverged (non-finite or |psi| > 10) at t = 5876; the others continue
+  WARNING: 1 of 4 rollout(s) diverged (non-finite or |psi| > 10) at t = 5908; the others continue
+  WARNING: 1 of 4 rollout(s) diverged (non-finite or |psi| > 10) at t = 8084; none left, stopping
+[rollout] l192: 28/50 seeds (320 steps each), 4 diverged
+  WARNING: 1 of 4 rollout(s) diverged (non-finite or |psi| > 10) at t = 4596; the others continue
+  WARNING: 1 of 4 rollout(s) diverged (non-finite or |psi| > 10) at t = 6388; the others continue
+  WARNING: 1 of 4 rollout(s) diverged (non-finite or |psi| > 10) at t = 6452; the others continue
+  WARNING: 1 of 4 rollout(s) diverged (non-finite or |psi| > 10) at t = 7412; none left, stopping
+[rollout] l192: 32/50 seeds (320 steps each), 4 diverged
+  WARNING: 1 of 4 rollout(s) diverged (non-finite or |psi| > 10) at t = 5364; the others continue
+  WARNING: 1 of 4 rollout(s) diverged (non-finite or |psi| > 10) at t = 6356; the others continue
+  WARNING: 1 of 4 rollout(s) diverged (non-finite or |psi| > 10) at t = 6676; the others continue
+  WARNING: 1 of 4 rollout(s) diverged (non-finite or |psi| > 10) at t = 7060; none left, stopping
+[rollout] l192: 36/50 seeds (320 steps each), 4 diverged
+  WARNING: 1 of 4 rollout(s) diverged (non-finite or |psi| > 10) at t = 5172; the others continue
+  WARNING: 1 of 4 rollout(s) diverged (non-finite or |psi| > 10) at t = 5524; the others continue
+  WARNING: 1 of 4 rollout(s) diverged (non-finite or |psi| > 10) at t = 7284; the others continue
+  WARNING: 1 of 4 rollout(s) diverged (non-finite or |psi| > 10) at t = 7572; none left, stopping
+[rollout] l192: 40/50 seeds (320 steps each), 4 diverged
+  WARNING: 1 of 4 rollout(s) diverged (non-finite or |psi| > 10) at t = 6996; the others continue
+  WARNING: 1 of 4 rollout(s) diverged (non-finite or |psi| > 10) at t = 7380; the others continue
+  WARNING: 2 of 4 rollout(s) diverged (non-finite or |psi| > 10) at t = 7860; none left, stopping
+[rollout] l192: 44/50 seeds (320 steps each), 4 diverged
+  WARNING: 1 of 4 rollout(s) diverged (non-finite or |psi| > 10) at t = 6388; the others continue
+  WARNING: 1 of 4 rollout(s) diverged (non-finite or |psi| > 10) at t = 7348; the others continue
+  WARNING: 1 of 4 rollout(s) diverged (non-finite or |psi| > 10) at t = 7700; the others continue
+  WARNING: 1 of 4 rollout(s) diverged (non-finite or |psi| > 10) at t = 8340; none left, stopping
+[rollout] l192: 48/50 seeds (320 steps each), 4 diverged
+  WARNING: 1 of 2 rollout(s) diverged (non-finite or |psi| > 10) at t = 5556; the others continue
+  WARNING: 1 of 2 rollout(s) diverged (non-finite or |psi| > 10) at t = 6452; none left, stopping
+[rollout] l192: 50/50 seeds (320 steps each), 2 diverged
+[rollout] l256: l=256 psi0=+0.0, 50 seeds, schedule psi0 = +0.0
+  WARNING: 1 of 2 rollout(s) diverged (non-finite or |psi| > 10) at t = 7284; the others continue
+  WARNING: 1 of 2 rollout(s) diverged (non-finite or |psi| > 10) at t = 7380; none left, stopping
+[rollout] l256: 2/50 seeds (320 steps each), 2 diverged
+  WARNING: 1 of 2 rollout(s) diverged (non-finite or |psi| > 10) at t = 4116; the others continue
+  WARNING: 1 of 2 rollout(s) diverged (non-finite or |psi| > 10) at t = 4852; none left, stopping
+[rollout] l256: 4/50 seeds (320 steps each), 2 diverged
+  WARNING: 1 of 2 rollout(s) diverged (non-finite or |psi| > 10) at t = 6068; the others continue
+  WARNING: 1 of 2 rollout(s) diverged (non-finite or |psi| > 10) at t = 6388; none left, stopping
+[rollout] l256: 6/50 seeds (320 steps each), 2 diverged
+  WARNING: 1 of 2 rollout(s) diverged (non-finite or |psi| > 10) at t = 5876; the others continue
+  WARNING: 1 of 2 rollout(s) diverged (non-finite or |psi| > 10) at t = 7124; none left, stopping
+[rollout] l256: 8/50 seeds (320 steps each), 2 diverged
+  WARNING: 1 of 2 rollout(s) diverged (non-finite or |psi| > 10) at t = 5812; the others continue
+  WARNING: 1 of 2 rollout(s) diverged (non-finite or |psi| > 10) at t = 7028; none left, stopping
+[rollout] l256: 10/50 seeds (320 steps each), 2 diverged
+  WARNING: 1 of 2 rollout(s) diverged (non-finite or |psi| > 10) at t = 5364; the others continue
+  WARNING: 1 of 2 rollout(s) diverged (non-finite or |psi| > 10) at t = 6260; none left, stopping
+[rollout] l256: 12/50 seeds (320 steps each), 2 diverged
+  WARNING: 1 of 2 rollout(s) diverged (non-finite or |psi| > 10) at t = 5716; the others continue
+  WARNING: 1 of 2 rollout(s) diverged (non-finite or |psi| > 10) at t = 6196; none left, stopping
+[rollout] l256: 14/50 seeds (320 steps each), 2 diverged
+  WARNING: 1 of 2 rollout(s) diverged (non-finite or |psi| > 10) at t = 6004; the others continue
+  WARNING: 1 of 2 rollout(s) diverged (non-finite or |psi| > 10) at t = 6836; none left, stopping
+[rollout] l256: 16/50 seeds (320 steps each), 2 diverged
+  WARNING: 1 of 2 rollout(s) diverged (non-finite or |psi| > 10) at t = 4820; the others continue
+  WARNING: 1 of 2 rollout(s) diverged (non-finite or |psi| > 10) at t = 6292; none left, stopping
+[rollout] l256: 18/50 seeds (320 steps each), 2 diverged
+  WARNING: 1 of 2 rollout(s) diverged (non-finite or |psi| > 10) at t = 6004; the others continue
+  WARNING: 1 of 2 rollout(s) diverged (non-finite or |psi| > 10) at t = 6644; none left, stopping
+[rollout] l256: 20/50 seeds (320 steps each), 2 diverged
+  WARNING: 1 of 2 rollout(s) diverged (non-finite or |psi| > 10) at t = 5460; the others continue
+  WARNING: 1 of 2 rollout(s) diverged (non-finite or |psi| > 10) at t = 6740; none left, stopping
+[rollout] l256: 22/50 seeds (320 steps each), 2 diverged
+  WARNING: 1 of 2 rollout(s) diverged (non-finite or |psi| > 10) at t = 5492; the others continue
+  WARNING: 1 of 2 rollout(s) diverged (non-finite or |psi| > 10) at t = 6836; none left, stopping
+[rollout] l256: 24/50 seeds (320 steps each), 2 diverged
+  WARNING: 1 of 2 rollout(s) diverged (non-finite or |psi| > 10) at t = 5684; the others continue
+  WARNING: 1 of 2 rollout(s) diverged (non-finite or |psi| > 10) at t = 5812; none left, stopping
+[rollout] l256: 26/50 seeds (320 steps each), 2 diverged
+  WARNING: 1 of 2 rollout(s) diverged (non-finite or |psi| > 10) at t = 6324; the others continue
+  WARNING: 1 of 2 rollout(s) diverged (non-finite or |psi| > 10) at t = 7828; none left, stopping
+[rollout] l256: 28/50 seeds (320 steps each), 2 diverged
+  WARNING: 1 of 2 rollout(s) diverged (non-finite or |psi| > 10) at t = 6964; the others continue
+  WARNING: 1 of 2 rollout(s) diverged (non-finite or |psi| > 10) at t = 8052; none left, stopping
+[rollout] l256: 30/50 seeds (320 steps each), 2 diverged
+  WARNING: 1 of 2 rollout(s) diverged (non-finite or |psi| > 10) at t = 5012; the others continue
+  WARNING: 1 of 2 rollout(s) diverged (non-finite or |psi| > 10) at t = 5748; none left, stopping
+[rollout] l256: 32/50 seeds (320 steps each), 2 diverged
+  WARNING: 1 of 2 rollout(s) diverged (non-finite or |psi| > 10) at t = 4756; the others continue
+  WARNING: 1 of 2 rollout(s) diverged (non-finite or |psi| > 10) at t = 5780; none left, stopping
+[rollout] l256: 34/50 seeds (320 steps each), 2 diverged
+  WARNING: 1 of 2 rollout(s) diverged (non-finite or |psi| > 10) at t = 5396; the others continue
+  WARNING: 1 of 2 rollout(s) diverged (non-finite or |psi| > 10) at t = 5844; none left, stopping
+[rollout] l256: 36/50 seeds (320 steps each), 2 diverged
+  WARNING: 1 of 2 rollout(s) diverged (non-finite or |psi| > 10) at t = 7156; the others continue
+  WARNING: 1 of 2 rollout(s) diverged (non-finite or |psi| > 10) at t = 7860; none left, stopping
+[rollout] l256: 38/50 seeds (320 steps each), 2 diverged
+  WARNING: 1 of 2 rollout(s) diverged (non-finite or |psi| > 10) at t = 7060; the others continue
+  WARNING: 1 of 2 rollout(s) diverged (non-finite or |psi| > 10) at t = 7476; none left, stopping
+[rollout] l256: 40/50 seeds (320 steps each), 2 diverged
+  WARNING: 1 of 2 rollout(s) diverged (non-finite or |psi| > 10) at t = 5556; the others continue
+  WARNING: 1 of 2 rollout(s) diverged (non-finite or |psi| > 10) at t = 6676; none left, stopping
+[rollout] l256: 42/50 seeds (320 steps each), 2 diverged
+  WARNING: 1 of 2 rollout(s) diverged (non-finite or |psi| > 10) at t = 4372; the others continue
+  WARNING: 1 of 2 rollout(s) diverged (non-finite or |psi| > 10) at t = 6996; none left, stopping
+[rollout] l256: 44/50 seeds (320 steps each), 2 diverged
+  WARNING: 1 of 2 rollout(s) diverged (non-finite or |psi| > 10) at t = 6132; the others continue
+  WARNING: 1 of 2 rollout(s) diverged (non-finite or |psi| > 10) at t = 6932; none left, stopping
+[rollout] l256: 46/50 seeds (320 steps each), 2 diverged
+  WARNING: 1 of 2 rollout(s) diverged (non-finite or |psi| > 10) at t = 5908; the others continue
+  WARNING: 1 of 2 rollout(s) diverged (non-finite or |psi| > 10) at t = 7220; none left, stopping
+[rollout] l256: 48/50 seeds (320 steps each), 2 diverged
+  WARNING: 1 of 2 rollout(s) diverged (non-finite or |psi| > 10) at t = 6580; the others continue
+  WARNING: 1 of 2 rollout(s) diverged (non-finite or |psi| > 10) at t = 6772; none left, stopping
+[rollout] l256: 50/50 seeds (320 steps each), 2 diverged
+
+[summary] train_t1000_lap_w12m12_pred_t10000: l = 128 (+ boxes), t = 100 -> 10000
+        case  alpha  dt_max  steps            mean R2           final R2     R2 >= thr to t n never   n_pred  n div
+   psi0m0.40   0.20    50.0    215    0.6347 +-0.1722    0.2484 +-0.2687        3114 +-1293   0/50    0.3613     14
+   psi0m0.20   0.20    45.0    233    0.6229 +-0.1597    0.1052 +-0.2466        3499 +-1660   0/50    0.3667     14
+   psi0p0.00   0.10    30.0    320    0.8226 +-0.0601    0.3152 +-0.1657        5475 +-1137   0/50    0.4909     45
+   psi0p0.20   0.35    30.0    316    0.5981 +-0.1634    0.0027 +-0.3348        3261 +-1812   0/50    0.4423     13
+   psi0p0.40   0.10    30.0    320    0.6147 +-0.1223    0.0897 +-0.2979        2812 +-1144   0/50    0.4163      0
+        l160   0.10    30.0      0       nan +-nan       nan +-nan        4114 +-787    0/50  n/a     50
+        l192   0.10    30.0      0       nan +-nan       nan +-nan        4460 +-677    0/50  n/a     50
+        l256   0.10    30.0      0       nan +-nan       nan +-nan        4331 +-508    0/50  n/a     50
+  n div: seeds whose rollout went non-finite or past max |psi| = 10; R2 columns cover the other seeds, the survival column counts a diverged seed as failed at its last good time
+  best psi0p0.00 (mean R2 0.8226), worst psi0p0.20 (mean R2 0.5981)
+[diagnostic] reference trajectory gt_l128_off+0.0_seed31337_t100-10000_ev4.npz
+
+[diagnostic] 64 -> 128 TRANSFER
+  tile invariance |model(tile) - tile(model)| = 6.707e-06   PASS
+  one-step R^2 at l=128 (training only ever saw t <= 999)
+         t0     dt     UNO R2  persistence      gain
+        100    4.0    0.99996      0.99721  +0.00275
+        100   20.0    0.99928      0.94469  +0.05459
+        100   40.0    0.99572      0.83902  +0.15669
+       1000    4.0    1.00000      0.99997  +0.00003   <- extrapolated in t
+       1000   20.0    0.99996      0.99920  +0.00076   <- extrapolated in t
+       1000   40.0    0.99988      0.99686  +0.00302   <- extrapolated in t
+       1900    4.0    1.00000      0.99999  +0.00001   <- extrapolated in t
+       1900   20.0    0.99996      0.99965  +0.00031   <- extrapolated in t
+       1900   40.0    0.99987      0.99861  +0.00126   <- extrapolated in t
+       2731    4.0    1.00000      0.99999  +0.00000   <- extrapolated in t
+       2731   20.0    0.99996      0.99981  +0.00015   <- extrapolated in t
+       2731   40.0    0.99985      0.99926  +0.00059   <- extrapolated in t
+       3730    8.0    0.99999      0.99999  +0.00000   <- extrapolated in t
+       3730   20.0    0.99994      0.99992  +0.00002   <- extrapolated in t
+       3730   40.0    0.99979      0.99968  +0.00011   <- extrapolated in t
+       5094    8.0    0.99998      0.99999  -0.00001   <- extrapolated in t
+       5094   20.0    0.99991      0.99996  -0.00004   <- extrapolated in t
+       5094   40.0    0.99970      0.99982  -0.00013   <- extrapolated in t
+       6956    4.0    0.99999      1.00000  -0.00001   <- extrapolated in t
+       6956   20.0    0.99987      0.99996  -0.00009   <- extrapolated in t
+       6956   40.0    0.99958      0.99983  -0.00025   <- extrapolated in t
+       9500    4.0    0.99999      1.00000  -0.00001   <- extrapolated in t
+       9500   20.0    0.99982      0.99998  -0.00016   <- extrapolated in t
+       9500   40.0    0.99945      0.99992  -0.00048   <- extrapolated in t
+
+[diagnostic] INTRINSIC PREDICTABILITY (exact solver)
+   rel. perturb   R2(t=2500)   R2(t=5000)  R2(t=10000)
+        1.0e-04      1.00000      1.00000      1.00000
+        1.0e-03      1.00000      1.00000      1.00000
+        1.0e-02      0.99998      0.99999      0.99999
+
+[diagnostic] PER-STEP COARSENING BIAS (continuous 'moment' estimator)
+  training data ends at t = 1000 (checkpoint)
+        t    dt   L_truth   dL_truth   dL_model   bias %  in train range
+      100    20     13.95     0.8093     0.8198      1.3  yes
+      150    20     15.67     0.5438     0.5518      1.5  yes
+      200    20     16.95     0.4068     0.4150      2.0  yes
+      300    20     18.76     0.3146     0.3156      0.3  yes
+      400    20     20.24     0.2784     0.2782     -0.1  yes
+      600    20     22.94     0.2594     0.2568     -1.0  yes
+      800    20     25.19     0.2019     0.1959     -2.9  yes
+     1100    20     27.74     0.1484     0.1421     -4.3  NO -- extrapolated
+     1400    20     29.98     0.1612     0.1562     -3.1  NO -- extrapolated
+     1700    20     32.02     0.1125     0.1066     -5.2  NO -- extrapolated
+     1900    20     33.14     0.1120     0.1058     -5.5  NO -- extrapolated
+     2731    28     37.14     0.0989     0.0704    -28.8  NO -- extrapolated
+     3730    40     39.84     0.0806     0.0337    -58.2  NO -- extrapolated
+     5094    52     42.07     0.0780     0.0191    -75.5  NO -- extrapolated
+     6956    48     45.06     0.0776     0.0277    -64.3  NO -- extrapolated
+     9500    48     48.26     0.0385    -0.0160   -141.6  NO -- extrapolated
+  mean bias inside  training range (7 pts): +0.2 %
+  mean bias outside training range (9 pts): -42.9 %
+
+[diagnostic] LOW-k INCREMENT GAIN (teacher-forced, per shell)
+  psi0 = +0.0, l = 128, 10 seed(s), dt = 48; below = the 8 modes |n| = 1, sqrt2 (k < the training box's 2 pi/64), first = |n| in [2, 2.9], mid = [3, 8], high = rest
+       t0    below    first      mid     high
+      500    0.759    0.984    0.993    0.992
+     1000    0.818    1.015    0.986    1.011
+     2000    0.925    1.088    0.995    1.066
+     5000    1.227    1.134    1.401    1.679
+
+[diagnostic] SPEEDUP vs the explicit solver
+  solver: 990,000 explicit steps of dt=0.01 -> 214.2s per trajectory (one at a time, measured on 2000 steps)
+  UNO:    320 autoregressive steps -> 2.740s per trajectory (one at a time)
+                                      0.577s per trajectory (amortised over a batch of 10)
+  speedup 78x like-for-like, 371x batched (3094x fewer steps)
+  quote the like-for-like number: the solver probe is unbatched too. Both compare against the explicit dt=0.01 scheme, not a semi-implicit spectral solver, which would need far fewer steps.
+
+[results] wrote Work/predict/train_t1000_lap_w12m12_pred_t10000/results.json
+
+[draw] train_t1000_lap_w12m12_pred_t10000 -> Results/train_t1000_lap_w12m12_pred_t10000
+[draw] WARNING l160: all 50 seeds diverged; no figures for this case
+[draw] WARNING l192: all 50 seeds diverged; no figures for this case
+[draw] WARNING l256: all 50 seeds diverged; no figures for this case
+[draw]   psi0m0.40: R2(10000) = 0.2484 +- 0.2687, best seed 84331, 14 of 50 diverged (excluded)
+[draw]   psi0m0.20: R2(10000) = 0.1052 +- 0.2466, best seed 68620, 14 of 50 diverged (excluded)
+[draw]   psi0p0.00: R2(10000) = 0.3152 +- 0.1657, best seed 48417, 45 of 50 diverged (excluded)
+[draw]   psi0p0.20: R2(10000) = 0.0027 +- 0.3348, best seed 29935, 13 of 50 diverged (excluded)
+[draw]   psi0p0.40: R2(10000) = 0.0897 +- 0.2979, best seed 99999
+[draw] WARNING l160: all 50 seeds diverged; no figures for this case
+[draw] WARNING l192: all 50 seeds diverged; no figures for this case
+[draw] WARNING l256: all 50 seeds diverged; no figures for this case
+[draw] WARNING l192: all 50 seeds diverged; no figures for this case
+[draw] WARNING l256: all 50 seeds diverged; no figures for this case
+[draw] comparison.png: 6 runs
+[draw] comparison_t1000.png: 11 runs
+[draw] done: 1 run folder(s) drawn, README.md lists 16 run(s) in Results/
+
+[done] total 1876.6s | 730,107 parameters | report -> Results/train_t1000_lap_w12m12_pred_t10000
+
+======================= SUBMISSION =======================
+[draw] WARNING l160: all 50 seeds diverged; no figures for this case
+[draw] WARNING l192: all 50 seeds diverged; no figures for this case
+[draw] WARNING l256: all 50 seeds diverged; no figures for this case
+[draw] WARNING l192: all 50 seeds diverged; no figures for this case
+[draw] WARNING l256: all 50 seeds diverged; no figures for this case
+[draw] comparison.png: 6 runs
+[draw] comparison_t1000.png: 11 runs
+[draw] done: 0 run folder(s) drawn, README.md lists 16 run(s) in Results/
+
+Job finished at Fri Oct 16 02:48:12 IST 2026

@@ -1,0 +1,31 @@
+Job started on cn20 at Wed Oct 14 16:55:24 IST 2026
+Python Path: /scratch/apps/spack/opt/spack/linux-rhel8-zen2/gcc-12.2.0/python-3.11.7-5lq34nvmagne2kk5vrue43h76b5wej7a/bin/python3
+cwd $HOME  ->  /iitjhome/m25ph1006/chc_uno_v1  [gpfs]
+  size 210.0 TB | used 23.8 TB (11%) | available 186.2 TB
+  inodes: 153,351,128 used of 4,294,967,296
+$TMPDIR /tmp  ->  /tmp  [ext4]
+  size 312.1 GB | used 5.1 GB (2%) | available 291.1 GB
+  inodes: 78,739 used of 20,856,832
+
+=== Quota: what you are allowed to use (user m25ph1006) ===
+
+$ /usr/lpp/mmfs/bin/mmlsquota -u m25ph1006 --block-size auto iitjhome
+Block Limits                                    |     File Limits
+Filesystem type         blocks      quota      limit   in_doubt    grace |    files   quota    limit in_doubt    grace  Remarks
+iitjhome   USR          185.3G       200G       200G     461.2M     none |   115811       0        0      121     none
+
+$ /usr/lpp/mmfs/bin/mmlsquota -g pgraduate --block-size auto iitjhome
+Disk quotas for group pgraduate (gid 1005):
+                         Block Limits                                    |     File Limits
+Filesystem type         blocks      quota      limit   in_doubt    grace |    files   quota    limit in_doubt    grace  Remarks
+iitjhome   GRP          10.12T          0          0      6.06G     none | 81359398       0        0     1302     none
+
+$ /usr/lpp/mmfs/bin/mmlsquota -j root --block-size auto iitjhome
+Block Limits                                    |     File Limits
+Filesystem type         blocks      quota      limit   in_doubt    grace |    files   quota    limit in_doubt    grace  Remarks
+iitjhome   FILESET     no limits
+
+Quota-related commands visible here: convertquota, edquota, mmcheckquota, mmdefedquota, mmdefquotaoff, mmdefquotaon, mmedquota, mmlsquota, mmquotaoff, mmquotaon, mmrepquota, mmsetquota, quota, quotacheck, quotaoff, quotaon, quotastats, quotasync, repquota, setquota, tscheckquota, tsdefedquota, tsdefquotaoff, tsdefquotaon, tsedquota, tslsquota, tsquotaoff, tsquotaon, tsrepquota, tssetquota, xfs_quota
+If none of the above shows a limit, ask your HPC admins or check the site docs.
+
+Job finished at Wed Oct 14 16:55:25 IST 2026

@@ -4,13 +4,18 @@
     python uno_predict.py                       END = 300, t_end = 10000
     python uno_predict.py --end 1000            t_end = PAIRS[1000] = 10000
     python uno_predict.py --end 1000 --variant base    the old architecture
+    python uno_predict.py --end 500 --modes 24          the 25.1M-parameter model
+    python uno_predict.py --end 1000 --width 32 --seed 1   a seed replicate
     python uno_predict.py --end 2000 --t-end 20000
     python uno_predict.py --gt-only --t-end 10000
     python uno_predict.py --smoke
 
-One run is labelled run_label(END, t_end, variant), e.g.
+One run is labelled run_label(END, t_end, variant, size tag), e.g.
 train_t0300_lap_pred_t10000 (Laplacian-output model, the default --variant
-lap) or train_t0300_pred_t10000 (--variant base, the old architecture):
+lap), train_t0300_pred_t10000 (--variant base, the old architecture) or
+train_t0500_lap_m24_pred_t10000 (--modes 24; --width W adds w<W>; --seed N
+adds s<N> for a model trained with another training seed, e.g.
+train_t1000_lap_w32s1_pred_t10000):
 
 1. the log goes to Work/predict/<label>/predict.log;
 2. ground-truth prewarm into Work/gt_cache/: test + tune seeds for every
@@ -18,7 +23,8 @@ lap) or train_t0300_pred_t10000 (--variant base, the old architecture):
    that stream frames to disk.  --gt-only stops here, before any model is
    loaded (it needs no checkpoint; --t-end alone picks the horizon);
 3. the model Work/models/train_t<END>_lap/uno_ch_best.pt (base: train_t<END>/;
-   or --ckpt) is loaded, and its arch must match --variant;
+   size-tagged: train_t<END>_lap_m24/; or --ckpt) is loaded, and its arch
+   must match --variant, --modes, --width and --seed;
 4. for each quench the stride schedule is tuned on the tune seeds (or
    reused), then every test seed is rolled out into the per-seed cache
    Work/rollout_cache/<label>/<case>/seed<N>.npz.  The box sizes use the
@@ -64,13 +70,15 @@ from make_submission import (a_to_psi, comp_case, domain_length,
                              r2_score, savez_compressed_atomic, seed_file,
                              structure_factor)
 from uno_train import (LOWK_SHELLS, LOWK_DT, RESULTS, SMOKE_RESULTS,
-                       SMOKE_ROOT, UNO, VARIANTS, WORK, data_horizon,
-                       default_t_end, find_gt, gt_dir, gt_provenance,
-                       ground_truth, ground_truth_batch, integrate, load_gt,
-                       lowk_gains, lowk_plan, make_schedule, model_dir,
-                       predict_dir, report_dir, rollout_dir, run_label,
-                       set_precision, setup_log, to_project_dir,
-                       variant_name)
+                       SMOKE_ROOT, UNO, VARIANTS, WORK, alive_mask,
+                       data_horizon, default_t_end, find_gt, gt_dir,
+                       gt_provenance, ground_truth, ground_truth_batch,
+                       integrate, load_gt, lowk_gains, lowk_plan,
+                       make_schedule, model_dir, predict_dir, report_dir,
+                       rollout_dir, run_label, run_tag, set_precision,
+                       setup_log, to_project_dir, variant_name)
+from uno_train import CONFIG as TRAIN_CONFIG
+from uno_train import SMOKE as TRAIN_SMOKE
 
 PHYSICS = (a_to_psi, domain_length, first_below, free_energy_density,
            pair_correlation, psi_to_a, r2_score, structure_factor)
@@ -93,6 +101,7 @@ CONFIG: dict[str, Any] = dict(
                     98029, 98895),
     t_start      = 100.0,
     threshold    = 0.80,
+    diverge_abs  = 10.0,
     snapshots    = (100.0, 500.0, 1000.0, 2000.0),
     long_snap_every = 2000.0,
     solver_dt    = 0.01,
@@ -213,7 +222,20 @@ def resolve_config(a):
     variant = getattr(a, "variant", None) or variant_name(
         cfg["laplacian_output"])
     cfg["laplacian_output"] = variant == "lap"
-    label = run_label(end, t_end, variant)
+    base_width, base_modes = TRAIN_CONFIG["width"], TRAIN_CONFIG["modes"]
+    want_width, want_modes = base_width, base_modes
+    if a.smoke:
+        want_width = TRAIN_SMOKE.get("width", want_width)
+        want_modes = TRAIN_SMOKE.get("modes", want_modes)
+    if getattr(a, "modes", None):
+        want_modes = base_modes = int(a.modes)
+    if getattr(a, "width", None):
+        want_width = base_width = int(a.width)
+    seed = int(getattr(a, "seed", None) or 0)
+    tag = run_tag(base_width, base_modes, seed)
+    label = run_label(end, t_end, variant, tag)
+    cfg.update(size_tag=tag, want_width=want_width, want_modes=want_modes,
+               want_seed=seed)
     cfg.update(variant=variant, train_end=end, t_end=t_end,
                smoke=bool(a.smoke), root=root,
                results=results, label=label, gt_dir=gt_dir(root),
@@ -221,7 +243,7 @@ def resolve_config(a):
                rollout_dir=rollout_dir(label, root),
                report_dir=report_dir(label, results))
     cfg["ckpt"] = (a.ckpt or cfg["ckpt"]
-                   or os.path.join(model_dir(end, root, variant),
+                   or os.path.join(model_dir(end, root, variant, tag),
                                    f"{cfg['run_name']}_best.pt"))
     cfg.update(time_grids(cfg))
     return cfg
@@ -307,26 +329,82 @@ def gt_frames(cfg, l, off, seed, ev, device):
 
 
 @torch.no_grad()
-def rollout(model, psi0, times, device, dtype, truth=None):
-    """Autoregressive rollout over all seeds at once."""
+def rollout(model, psi0, times, device, dtype, truth=None, return_div=False,
+            diverge_abs=None):
+    """Autoregressive rollout over all seeds at once.
+
+    A seed diverges when its field goes non-finite or max |psi| exceeds
+    diverge_abs (default CONFIG['diverge_abs']).  It is frozen at its last
+    good state, so no NaN reaches the model, and its stored states and R^2
+    are NaN from that step on; the other seeds keep rolling, which is exact
+    because the model acts on every sample separately.  The loop stops early
+    only when no seed is alive, and the rows then end before that step.
+
+    Returns (states, r2), plus div_at when return_div is True: the time
+    each seed diverged at, NaN for a seed that never did.  Without a
+    divergence states and r2 are exactly what the unmasked rollout gave.
+    """
+    limit = float(CONFIG["diverge_abs"] if diverge_abs is None
+                  else diverge_abs)
     psi = torch.as_tensor(psi0, dtype=dtype, device=device)
     if psi.ndim == 3:
         psi = psi.unsqueeze(1)
     b = psi.shape[0]
+    alive = torch.ones(b, dtype=torch.bool, device=device)
+    dead = np.zeros(b, dtype=bool)
+    div_at = np.full(b, np.nan)
     states = [psi[:, 0].float().cpu().numpy().copy()]
     r2 = [[1.0 if truth is None else r2_score(states[0][k], truth[0][k])
            for k in range(b)]]
     for i in range(1, len(times)):
         dt = torch.full((b,), float(times[i] - times[i - 1]), device=device,
                         dtype=dtype)
-        psi = model(psi, dt)
-        if not torch.isfinite(psi).all():
-            log(f"  WARNING: non-finite state at t = {times[i]:g}; truncating")
-            break
+        new = model(psi, dt)
+        newly = alive & ~alive_mask(new, limit)
+        if bool(newly.any()):
+            gone = newly.cpu().numpy()
+            div_at[gone] = float(times[i])
+            dead |= gone
+            alive = alive & ~newly
+            none_left = not bool(alive.any())
+            log(f"  WARNING: {int(gone.sum())} of {b} rollout(s) diverged "
+                f"(non-finite or |psi| > {limit:g}) at t = {times[i]:g}; "
+                + ("none left, stopping" if none_left
+                   else "the others continue"))
+            if none_left:
+                break
+        psi = torch.where(alive.view(-1, 1, 1, 1), new, psi)
         states.append(psi[:, 0].float().cpu().numpy().copy())
+        if dead.any():
+            states[-1][dead] = np.nan
         if truth is not None:
-            r2.append([r2_score(states[-1][k], truth[i][k]) for k in range(b)])
+            r2.append([float("nan") if dead[k]
+                       else r2_score(states[-1][k], truth[i][k])
+                       for k in range(b)])
+    if return_div:
+        return np.array(states), np.array(r2), div_at
     return np.array(states), np.array(r2)
+
+
+def scored_r2(r2, times, div_at):
+    """(len(times), b) rollout R^2 as the tuning score counts it.
+
+    A diverged seed is R^2 = -1 at every time from its divergence time on
+    (the convention of uno_train.eval_rollout), never its last value held
+    flat; a rollout that stopped early is padded with -1 the same way.
+    """
+    r2 = np.asarray(r2, dtype=np.float64)
+    n = len(times)
+    if r2.shape[0] < n:
+        r2 = np.concatenate([r2, np.full((n - r2.shape[0], r2.shape[1]),
+                                         -1.0)])
+    else:
+        r2 = r2.copy()
+    tv = np.asarray(times, dtype=np.float64)
+    for k, t in enumerate(div_at):
+        if np.isfinite(t):
+            r2[tv >= t - 1e-6, k] = -1.0
+    return r2
 
 
 def tune(model, cfg, device, dtype, off):
@@ -353,7 +431,8 @@ def tune(model, cfg, device, dtype, off):
     q = float(gt_t[1] - gt_t[0])
 
     head = "".join(f"{'R2(' + format(t, 'g') + ')':>10}" for t in report)
-    log(f"  {'alpha':>7} {'dt_max':>7} {'steps':>6} {'score':>9}{head}")
+    log(f"  {'alpha':>7} {'dt_max':>7} {'steps':>6} {'score':>9}{head}"
+        f"{'div':>5}")
 
     scores = []
     for a in cfg["tune_alphas"]:
@@ -364,16 +443,18 @@ def tune(model, cfg, device, dtype, off):
             idx = frame_index(gt_t, times, "tune")
             truth = np.stack([np.asarray(f[idx]) for f in fields],
                              axis=1).astype(np.float64)
-            _, r2b = rollout(model, truth[0], times, device, dtype,
-                             truth=truth)
-            r2 = r2b.mean(axis=1)
+            _, r2b, div = rollout(model, truth[0], times, device, dtype,
+                                  truth=truth, return_div=True,
+                                  diverge_abs=cfg["diverge_abs"])
+            r2 = scored_r2(r2b, times, div).mean(axis=1)
             tv = np.asarray(times, dtype=np.float64)
-            at = [float(r2[min(int(np.argmin(np.abs(tv - tt))), len(r2) - 1)])
+            at = [float(r2[int(np.argmin(np.abs(tv - tt)))])
                   for tt in report]
             sc = float(np.mean(at))
             scores.append((sc, float(a), float(dm), len(times) - 1))
             log(f"  {a:7.3f} {dm:7.1f} {len(times) - 1:6d} {sc:9.4f}"
-                + "".join(f"{v:10.4f}" for v in at))
+                + "".join(f"{v:10.4f}" for v in at)
+                + f"{int(np.isfinite(div).sum()):5d}")
             del truth
 
     best = max(scores, key=lambda x: x[0])
@@ -389,10 +470,39 @@ def tune(model, cfg, device, dtype, off):
     return best[1], best[2]
 
 
+def arch_size_mismatch(ck, cfg):
+    """Text naming the width/modes/training seed of the checkpoint that
+    differ from the requested ones, or '' when they agree.  A checkpoint
+    without a recorded seed was trained with seed 0."""
+    arch = ck.get("arch", {})
+    got = (arch.get("width"), arch.get("modes"))
+    want = (cfg["want_width"], cfg["want_modes"])
+    seed = int((ck.get("config") or {}).get("seed", 0))
+    if got == want and seed == cfg["want_seed"]:
+        return ""
+    return (f"arch width = {got[0]}, modes = {got[1]}, training seed = "
+            f"{seed} but this run asks for width = {want[0]}, modes = "
+            f"{want[1]}, seed = {cfg['want_seed']}")
+
+
+def check_arch_size(ck, cfg, ckpt):
+    bad = arch_size_mismatch(ck, cfg)
+    if bad:
+        raise SystemExit(
+            f"{ckpt} has {bad} ({cfg['label']}); pass --modes "
+            f"{ck['arch'].get('modes')} --width {ck['arch'].get('width')} "
+            f"--seed {int((ck.get('config') or {}).get('seed', 0))} "
+            f"for this checkpoint")
+
+
 def load_model(cfg, device, dtype):
     ckpt = cfg["ckpt"]
     if not os.path.exists(ckpt):
         var = f" --variant {cfg['variant']}"
+        if cfg["size_tag"]:
+            var += (f" --modes {cfg['want_modes']}"
+                    f" --width {cfg['want_width']}"
+                    f" --seed {cfg['want_seed']}")
         hint = (f"python3 uno_train.py --smoke --end {cfg['train_end']}{var}"
                 if cfg["smoke"] else
                 f"python uno_train.py --end {cfg['train_end']}{var}")
@@ -405,6 +515,7 @@ def load_model(cfg, device, dtype):
             f"{ckpt} has arch.laplacian_output = {lap}, but this run is "
             f"--variant {cfg['variant']} ({cfg['label']}); pass --variant "
             f"{variant_name(lap)} for this checkpoint")
+    check_arch_size(ck, cfg, ckpt)
     model = UNO(**ck["arch"]).to(device, dtype=dtype).eval()
     model.load_state_dict(ck["model"])
     n_par = sum(p.numel() for p in model.parameters())
@@ -480,8 +591,8 @@ def archive_superseded(cfg):
     Returns the log lines (the run log is not open yet when this runs, since
     its folder is one of the folders that move).  Nothing is deleted.  A
     checkpoint whose training horizon does not match the run's END, or whose
-    architecture does not match the variant, moves nothing, so the later
-    check can stop the run with the old run intact.
+    architecture does not match the variant or the size, moves nothing, so
+    the later check can stop the run with the old run intact.
     """
     mpath = os.path.join(cfg["rollout_dir"], "meta.json")
     if not (os.path.exists(mpath) and os.path.exists(cfg["ckpt"])):
@@ -492,7 +603,7 @@ def archive_superseded(cfg):
         return []
     ck = torch.load(cfg["ckpt"], map_location="cpu", weights_only=False)
     is_lap = bool(ck.get("arch", {}).get("laplacian_output", False))
-    if is_lap != (cfg["variant"] == "lap"):
+    if is_lap != (cfg["variant"] == "lap") or arch_size_mismatch(ck, cfg):
         return []
     t_train = ck.get("train_t_end") or cfg["train_t_end"]
     if t_train and int(round(float(t_train))) != cfg["train_end"]:
@@ -575,7 +686,13 @@ def pick_schedule(model, cfg, meta, src, off, device, dtype):
 
 
 def cached_ok(path, fp, label, s, t_end):
-    """A seed file already rolled out by this checkpoint, run and schedule."""
+    """A seed file already rolled out by this checkpoint, run and schedule.
+
+    A file with the diverged_at key is final, full length or cut at its own
+    divergence.  One without it is accepted only when it reaches t_end: an
+    older short file is the whole-chunk truncation (healthy seeds lost their
+    trajectory with the one that blew up) and is rolled out again.
+    """
     if not os.path.exists(path):
         return False
     try:
@@ -588,6 +705,8 @@ def cached_ok(path, fp, label, s, t_end):
                 ok = ok and str(z["label"]) == label
             if "t_end" in f:
                 ok = ok and abs(float(z["t_end"]) - t_end) < 1e-6
+            if ok and "diverged_at" not in f:
+                ok = float(z["times"][-1]) >= t_end - 1e-6
     except (OSError, ValueError, KeyError, zipfile.BadZipFile):
         return False
     return bool(ok)
@@ -645,18 +764,20 @@ def roll_case(model, cfg, meta, case, seeds, fp, t_train, device, dtype):
         truth = np.stack(fields, axis=1).astype(np.float64)
         del fields
         t_w = time.time()
-        states, r2 = rollout(model, truth[0], times, device, dtype,
-                             truth=truth)
+        states, r2, div = rollout(model, truth[0], times, device, dtype,
+                                  truth=truth, return_div=True,
+                                  diverge_abs=cfg["diverge_abs"])
         wall += time.time() - t_w
-        nv = states.shape[0]
         tt = np.asarray(times, dtype=float)
         ks = [int(np.argmin(np.abs(tt - x))) for x in snaps]
         for b, sd in enumerate(chunk):
-            tr, pr = truth[:nv, b], states[:, b]
+            nv = (len(tt) if np.isnan(div[b])
+                  else int(np.searchsorted(tt, div[b] - 1e-6)))
+            tr, pr = truth[:nv, b], states[:nv, b]
             blank = np.full((l, l), np.nan)
             savez_compressed_atomic(
                 seed_file(cdir, case, sd),
-                times=tt[:nv], r2=np.asarray(r2)[:, b],
+                times=tt[:nv], r2=np.asarray(r2)[:nv, b],
                 L_half_truth=np.array([domain_length(x, "half") for x in tr]),
                 L_half_pred=np.array([domain_length(x, "half") for x in pr]),
                 L_zero_truth=np.array([domain_length(x, "zero") for x in tr]),
@@ -673,9 +794,12 @@ def roll_case(model, cfg, meta, case, seeds, fp, t_train, device, dtype):
                 seed=sd, l=l, off=off, alpha=s["alpha"], dt_min=s["dt_min"],
                 dt_max=s["dt_max"], fingerprint=fp, label=label,
                 t_end=float(cfg["t_end"]),
-                train_t_end=float(t_train or 0.0))
+                train_t_end=float(t_train or 0.0),
+                diverged_at=float(div[b]))
+        n_div = int(np.isfinite(div).sum())
         log(f"[rollout] {case}: {i + len(chunk)}/{len(todo)} seeds "
-            f"({len(times) - 1} steps each)")
+            f"({len(times) - 1} steps each)"
+            + (f", {n_div} diverged" if n_div else ""))
         del truth, states
     return wall
 
@@ -708,6 +832,7 @@ def rollout_run(model, ck, n_par, cfg, device, dtype, prec, t_train,
         long_snapshots=[float(x) for x in cfg["long_snaps"]],
         long_snap_every=float(cfg["long_snap_every"]),
         threshold=float(cfg["threshold"]),
+        diverge_abs=float(cfg["diverge_abs"]),
         created=meta.get("created") or f"{datetime.now():%Y-%m-%d %H:%M:%S}")
     meta.setdefault("schedule", {})
     old_sched = {k: dict(v) for k, v in meta["schedule"].items()}
@@ -990,7 +1115,9 @@ def cache_summary(cfg, meta):
         d = ms.load_case(cfg["rollout_dir"], case, ms.case_seeds(meta, case),
                          meta, snaps=False)
         out[case] = ms.case_stats(d, float(cfg["threshold"]))
-        out[case]["growth_zero_crossing"] = ms.growth_record(d, meta, "zero")
+        out[case]["growth_zero_crossing"] = (
+            ms.growth_record(d, meta, "zero") if d["seeds"]
+            else dict(n_pred=None, n_truth=None))
     return out
 
 
@@ -1001,7 +1128,7 @@ def summary_table(summ, meta, cfg):
         f"{cfg['t_start']:g} -> {cfg['t_end']:g}")
     log(f"  {'case':>10} {'alpha':>6} {'dt_max':>7} {'steps':>6} "
         f"{'mean R2':>18} {'final R2':>18} {'R2 >= thr to t':>18} "
-        f"{'n never':>7} {'n_pred':>8}")
+        f"{'n never':>7} {'n_pred':>8} {'n div':>6}")
     for case, s in summ.items():
         c = meta["cases"][case]
         e, m, v = s["r2_at_end"], s["r2_trajectory_mean"], s["survival"]
@@ -1011,9 +1138,21 @@ def summary_table(summ, meta, cfg):
             f"{e['mean']:9.4f} +-{e['sd']:.4f} "
             f"{v['mean']:11.0f} +-{v['sd']:<4.0f} "
             f"{v['n_survive_to_end']:3d}/{s['n_seeds']:<3d} "
-            f"{ms.fmt(n_p, '8.4f')}")
+            f"{ms.fmt(n_p, '8.4f')} {s['n_diverged']:6d}")
+    for case, s in summ.items():
+        if s["n_truncated_legacy"]:
+            log(f"  WARNING {case}: {s['n_truncated_legacy']} legacy seed "
+                f"file(s) stop before t_end and carry no diverged_at; the "
+                f"case was cut to the shortest (rerun the prediction: they "
+                f"are rolled out again)")
+    if any(s["n_diverged"] for s in summ.values()):
+        log("  n div: seeds whose rollout went non-finite or past "
+            f"max |psi| = {cfg['diverge_abs']:g}; R2 columns cover the other "
+            "seeds, the survival column counts a diverged seed as failed at "
+            "its last good time")
     comp = {k: v for k, v in summ.items()
-            if meta["cases"][k]["kind"] == "composition"}
+            if meta["cases"][k]["kind"] == "composition"
+            and math.isfinite(v["r2_trajectory_mean"]["mean"])}
     if comp:
         best = max(comp, key=lambda k: comp[k]["r2_trajectory_mean"]["mean"])
         worst = min(comp, key=lambda k: comp[k]["r2_trajectory_mean"]["mean"])
@@ -1033,7 +1172,8 @@ def header(cfg, device, prec, dtype, what):
             f"torch {torch.__version__}")
     log(f"[setup] device={device} precision={prec} dtype={dtype}")
     log(f"[setup] label {cfg['label']}: END = {cfg['train_end']}, variant "
-        f"{cfg['variant']}, t = "
+        f"{cfg['variant']}, width {cfg['want_width']}, modes "
+        f"{cfg['want_modes']}, seed {cfg['want_seed']}, t = "
         f"{cfg['t_start']:g} -> {cfg['t_end']:g}, save_every "
         f"{cfg['save_every']:g}")
     log(f"[setup] snapshots main {list(cfg['main_snaps'])}, long "
@@ -1054,6 +1194,18 @@ def parse_args(argv=None):
                     help="lap (default): the Laplacian-output model in "
                          "Work/models/train_t<END>_lap/; base: the old "
                          "architecture in train_t<END>/")
+    ap.add_argument("--modes", type=int, default=None,
+                    help="Fourier modes of the model (default 20): a "
+                         "non-default value selects Work/models/train_t<END>"
+                         "_lap_m<M>/ and labels the run ..._m<M>_pred_...")
+    ap.add_argument("--width", type=int, default=None,
+                    help="channel width of the model (default 40); tagged "
+                         "w<W> in the label")
+    ap.add_argument("--seed", type=int, default=0,
+                    help="training seed of the model (default 0): a "
+                         "non-zero value selects Work/models/train_t<END>"
+                         "_lap_..s<N>/ and labels the run ..s<N>_pred_...; "
+                         "the checkpoint must have been trained with it")
     ap.add_argument("--gt-only", action="store_true",
                     help="solve or verify every ground-truth file the run "
                          "needs, then exit (no model is loaded)")
@@ -1067,13 +1219,15 @@ def parse_args(argv=None):
 
 
 def rollout_only(end=None, t_end=0.0, smoke=False, ckpt="", seeds=0,
-                 schedule_from="", variant=None):
+                 schedule_from="", variant=None, modes=None, width=None,
+                 seed=0):
     """make_submission --rollout: fill one run's rollout cache, no diagnostics.
 
     Returns the run label.  Logs to Work/predict/<label>/rollout.log.
     """
     a = argparse.Namespace(end=end, t_end=t_end, smoke=smoke, ckpt=ckpt,
-                           gt_only=False, variant=variant)
+                           gt_only=False, variant=variant, modes=modes,
+                           width=width, seed=seed)
     to_project_dir()
     cfg = resolve_config(a)
     moved = archive_superseded(cfg)

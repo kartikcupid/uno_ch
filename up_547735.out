@@ -1,0 +1,205 @@
+Job started on gpu1 at Fri Oct 16 02:00:33 IST 2026
+Python Path: /iitjhome/m25ph1006/chc_uno_v1/env/bin/python
+Python 3.11.7
+CUDA Available Devices: 0
+PyTorch GPU Available: True
+Device Name: NVIDIA A100-SXM4-40GB
+======================= PREDICTION (END=1000, VARIANT=lap, MODES=20, WIDTH=8, SEED=0, T_END=10000) =======================
+==============================================================================
+ UNO / Cahn-Hilliard -- PREDICTION   2026-10-16 02:00:39
+==============================================================================
+[setup] NVIDIA A100-SXM4-40GB, 42.4 GB, torch 2.13.0+cu126
+[setup] device=cuda precision=fp32 dtype=torch.float32
+[setup] label train_t1000_lap_w8_pred_t10000: END = 1000, variant lap, width 8, modes 20, seed 0, t = 100 -> 10000, save_every 4
+[setup] snapshots main [100.0, 500.0, 1000.0, 2000.0], long [2000.0, 4000.0, 6000.0, 8000.0, 10000.0], tune scores at [2500.0, 5000.0, 7500.0, 10000.0]
+[gt] prewarm to t = 10000 in Work/gt_cache
+[gt]   l=128 off=-0.4 ev=4: 60 trajectories, 0 solved, 60 cached
+[gt]   l=128 off=-0.2 ev=4: 60 trajectories, 0 solved, 60 cached
+[gt]   l=128 off=+0.0 ev=4: 60 trajectories, 0 solved, 60 cached
+[gt]   l=128 off=+0.2 ev=4: 60 trajectories, 0 solved, 60 cached
+[gt]   l=128 off=+0.4 ev=4: 60 trajectories, 0 solved, 60 cached
+[gt]   l=160 off=+0.0 ev=4: 50 trajectories, 0 solved, 50 cached
+[gt]   l=192 off=+0.0 ev=4: 50 trajectories, 0 solved, 50 cached
+[gt]   l=256 off=+0.0 ev=4: 50 trajectories, 0 solved, 50 cached
+[gt] 450 trajectories ready (0 solved now) in 0s
+[model] Work/models/train_t1000_lap_w8/uno_ch_best.pt  735,212 parameters  arch={'width': 8, 'modes': 20, 'n_ref': 64, 'levels': 3, 'cond_dim': 64, 'conserve_mass': True, 'laplacian_output': True}
+[model] training metrics: {'select': 'survival', 'survives': 4844.917147801377, 'per_seed': [8893.603253860652, 2636.880849186369, 1500.2961813101517, 3465.3387286789934, 5409.325320277915, 3260.179599994448, 3717.9719898852354, 3484.6019536853605, 6080.973601134648, 10000.0], 'r2_in_range': 0.9382921878172427, 'in_range_t1': 2000.0, 'rollout': -553011907622496.4, 'epoch': 28, 'val1': 0.0002806238149888587}
+[model] training data ends at t = 1000.0 (checkpoint)
+[eval] offs=[-0.4, -0.2, 0.0, 0.2, 0.4]  50 test seeds=[99999, 54321, 77777, 31415, 27182, 61803, 41421, 57721, 66260, 86420, 20264, 22348, 22911, 27614, 27924, 28096, 29935, 31458, 32393, 33052, 33672, 34617, 35064, 35973, 36643, 36963, 39748, 42192, 43125, 48417, 51170, 52066, 54464, 58713, 60079, 63866, 67517, 68620, 70389, 76145, 76214, 77086, 84331, 85507, 88080, 88971, 92280, 94245, 98029, 98895]
+[rollout] cache Work/rollout_cache/train_t1000_lap_w8_pred_t10000  checkpoint c61fdbf5be00
+
+[schedule] psi0 = -0.4: alpha = 0.1, dt_max = 45  (tuned on 10 validation seeds)
+[rollout] psi0m0.40: l=128 psi0=-0.4, 50 seeds, schedule psi0 = -0.4
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9776; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9952; the others continue
+[rollout] psi0m0.40: 10/50 seeds (240 steps each), 2 diverged
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7488; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9424; the others continue
+[rollout] psi0m0.40: 20/50 seeds (240 steps each), 2 diverged
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9468; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9732; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9908; the others continue
+[rollout] psi0m0.40: 30/50 seeds (240 steps each), 3 diverged
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 7928; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9204; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9908; the others continue
+[rollout] psi0m0.40: 40/50 seeds (240 steps each), 3 diverged
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9248; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9732; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9996; the others continue
+[rollout] psi0m0.40: 50/50 seeds (240 steps each), 3 diverged
+
+[schedule] psi0 = -0.2: alpha = 0.35, dt_max = 40  (tuned on 10 validation seeds)
+[rollout] psi0m0.20: l=128 psi0=-0.2, 50 seeds, schedule psi0 = -0.2
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9336; the others continue
+[rollout] psi0m0.20: 10/10 seeds (254 steps each), 1 diverged
+
+[schedule] psi0 = +0.0: alpha = 0.1, dt_max = 30  (tuned on 10 validation seeds)
+[rollout] psi0p0.00: l=128 psi0=+0.0, 50 seeds, schedule psi0 = +0.0
+[rollout] psi0p0.00: all 50 seeds cached
+
+[schedule] psi0 = +0.2: alpha = 0.35, dt_max = 30  (tuned on 10 validation seeds)
+[rollout] psi0p0.20: l=128 psi0=+0.2, 50 seeds, schedule psi0 = +0.2
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 8708; the others continue
+  WARNING: 1 of 10 rollout(s) diverged (non-finite or |psi| > 10) at t = 9380; the others continue
+[rollout] psi0p0.20: 10/10 seeds (316 steps each), 2 diverged
+
+[schedule] psi0 = +0.4: alpha = 0.2, dt_max = 30  (tuned on 10 validation seeds)
+[rollout] psi0p0.40: l=128 psi0=+0.4, 50 seeds, schedule psi0 = +0.4
+[rollout] psi0p0.40: all 50 seeds cached
+[rollout] l160: l=160 psi0=+0.0, 50 seeds, schedule psi0 = +0.0
+[rollout] l160: all 50 seeds cached
+[rollout] l192: l=192 psi0=+0.0, 50 seeds, schedule psi0 = +0.0
+  WARNING: 1 of 4 rollout(s) diverged (non-finite or |psi| > 10) at t = 9332; the others continue
+[rollout] l192: 4/12 seeds (320 steps each), 1 diverged
+  WARNING: 1 of 4 rollout(s) diverged (non-finite or |psi| > 10) at t = 8788; the others continue
+[rollout] l192: 8/12 seeds (320 steps each), 1 diverged
+  WARNING: 1 of 4 rollout(s) diverged (non-finite or |psi| > 10) at t = 7412; the others continue
+[rollout] l192: 12/12 seeds (320 steps each), 1 diverged
+[rollout] l256: l=256 psi0=+0.0, 50 seeds, schedule psi0 = +0.0
+  WARNING: 1 of 2 rollout(s) diverged (non-finite or |psi| > 10) at t = 7988; the others continue
+[rollout] l256: 2/12 seeds (320 steps each), 1 diverged
+  WARNING: 1 of 2 rollout(s) diverged (non-finite or |psi| > 10) at t = 9076; the others continue
+[rollout] l256: 4/12 seeds (320 steps each), 1 diverged
+  WARNING: 1 of 2 rollout(s) diverged (non-finite or |psi| > 10) at t = 9844; the others continue
+[rollout] l256: 6/12 seeds (320 steps each), 1 diverged
+  WARNING: 1 of 2 rollout(s) diverged (non-finite or |psi| > 10) at t = 9044; the others continue
+[rollout] l256: 8/12 seeds (320 steps each), 1 diverged
+  WARNING: 1 of 2 rollout(s) diverged (non-finite or |psi| > 10) at t = 9108; the others continue
+[rollout] l256: 10/12 seeds (320 steps each), 1 diverged
+  WARNING: 1 of 2 rollout(s) diverged (non-finite or |psi| > 10) at t = 9140; the others continue
+[rollout] l256: 12/12 seeds (320 steps each), 1 diverged
+
+[summary] train_t1000_lap_w8_pred_t10000: l = 128 (+ boxes), t = 100 -> 10000
+        case  alpha  dt_max  steps            mean R2           final R2     R2 >= thr to t n never   n_pred  n div
+   psi0m0.40   0.10    45.0    240    0.3870 +-0.1760    0.0205 +-0.2913        1268 +-542    0/50    0.3224     13
+   psi0m0.20   0.35    40.0    254    0.4920 +-0.1977    0.1393 +-0.3331        1862 +-930    0/50    0.2943      1
+   psi0p0.00   0.10    30.0    320    0.7702 +-0.1247    0.5444 +-0.1995        5181 +-2653   4/50    0.2835      0
+   psi0p0.20   0.35    30.0    316    0.4691 +-0.1962    0.1145 +-0.3059        1684 +-948    0/50    0.2830      2
+   psi0p0.40   0.20    30.0    317    0.3695 +-0.1855   -0.0278 +-0.3533        1262 +-543    0/50    0.3276      0
+        l160   0.10    30.0    320    0.7452 +-0.1102    0.5419 +-0.1870        4348 +-2516   1/50    0.2894      0
+        l192   0.10    30.0    320    0.7125 +-0.1014    0.4803 +-0.1663        3572 +-1824   0/50    0.3014      3
+        l256   0.10    30.0    320    0.7101 +-0.0743    0.4700 +-0.1277        3431 +-1304   0/50    0.2934      6
+  n div: seeds whose rollout went non-finite or past max |psi| = 10; R2 columns cover the other seeds, the survival column counts a diverged seed as failed at its last good time
+  best psi0p0.00 (mean R2 0.7702), worst psi0p0.40 (mean R2 0.3695)
+[diagnostic] reference trajectory gt_l128_off+0.0_seed31337_t100-10000_ev4.npz
+
+[diagnostic] 64 -> 128 TRANSFER
+  tile invariance |model(tile) - tile(model)| = 8.090e-06   PASS
+  one-step R^2 at l=128 (training only ever saw t <= 999)
+         t0     dt     UNO R2  persistence      gain
+        100    4.0    0.99995      0.99721  +0.00274
+        100   20.0    0.99894      0.94469  +0.05426
+        100   40.0    0.99485      0.83902  +0.15583
+       1000    4.0    1.00000      0.99997  +0.00003   <- extrapolated in t
+       1000   20.0    0.99994      0.99920  +0.00074   <- extrapolated in t
+       1000   40.0    0.99980      0.99686  +0.00294   <- extrapolated in t
+       1900    4.0    1.00000      0.99999  +0.00001   <- extrapolated in t
+       1900   20.0    0.99996      0.99965  +0.00031   <- extrapolated in t
+       1900   40.0    0.99986      0.99861  +0.00125   <- extrapolated in t
+       2731    4.0    1.00000      0.99999  +0.00001   <- extrapolated in t
+       2731   20.0    0.99997      0.99981  +0.00016   <- extrapolated in t
+       2731   40.0    0.99990      0.99926  +0.00064   <- extrapolated in t
+       3730    8.0    0.99999      0.99999  +0.00001   <- extrapolated in t
+       3730   20.0    0.99998      0.99992  +0.00006   <- extrapolated in t
+       3730   40.0    0.99992      0.99968  +0.00024   <- extrapolated in t
+       5094    8.0    1.00000      0.99999  +0.00000   <- extrapolated in t
+       5094   20.0    0.99998      0.99996  +0.00003   <- extrapolated in t
+       5094   40.0    0.99993      0.99982  +0.00011   <- extrapolated in t
+       6956    4.0    1.00000      1.00000  +0.00000   <- extrapolated in t
+       6956   20.0    0.99998      0.99996  +0.00003   <- extrapolated in t
+       6956   40.0    0.99994      0.99983  +0.00011   <- extrapolated in t
+       9500    4.0    1.00000      1.00000  -0.00000   <- extrapolated in t
+       9500   20.0    0.99998      0.99998  -0.00000   <- extrapolated in t
+       9500   40.0    0.99993      0.99992  +0.00000   <- extrapolated in t
+
+[diagnostic] INTRINSIC PREDICTABILITY (exact solver)
+   rel. perturb   R2(t=2500)   R2(t=5000)  R2(t=10000)
+        1.0e-04      1.00000      1.00000      1.00000
+        1.0e-03      1.00000      1.00000      1.00000
+        1.0e-02      0.99998      0.99999      0.99999
+
+[diagnostic] PER-STEP COARSENING BIAS (continuous 'moment' estimator)
+  training data ends at t = 1000 (checkpoint)
+        t    dt   L_truth   dL_truth   dL_model   bias %  in train range
+      100    20     13.95     0.8093     0.7621     -5.8  yes
+      150    20     15.67     0.5438     0.5157     -5.2  yes
+      200    20     16.95     0.4068     0.3887     -4.5  yes
+      300    20     18.76     0.3146     0.2954     -6.1  yes
+      400    20     20.24     0.2784     0.2566     -7.8  yes
+      600    20     22.94     0.2594     0.2343     -9.7  yes
+      800    20     25.19     0.2019     0.1772    -12.2  yes
+     1100    20     27.74     0.1484     0.1236    -16.7  NO -- extrapolated
+     1400    20     29.98     0.1612     0.1367    -15.2  NO -- extrapolated
+     1700    20     32.02     0.1125     0.0884    -21.4  NO -- extrapolated
+     1900    20     33.14     0.1120     0.0872    -22.1  NO -- extrapolated
+     2731    28     37.14     0.0989     0.0575    -41.9  NO -- extrapolated
+     3730    40     39.84     0.0806     0.0202    -75.0  NO -- extrapolated
+     5094    52     42.07     0.0780    -0.0033   -104.2  NO -- extrapolated
+     6956    48     45.06     0.0776    -0.0035   -104.5  NO -- extrapolated
+     9500    48     48.26     0.0385    -0.0407   -205.7  NO -- extrapolated
+  mean bias inside  training range (7 pts): -7.3 %
+  mean bias outside training range (9 pts): -67.4 %
+
+[diagnostic] LOW-k INCREMENT GAIN (teacher-forced, per shell)
+  psi0 = +0.0, l = 128, 10 seed(s), dt = 48; below = the 8 modes |n| = 1, sqrt2 (k < the training box's 2 pi/64), first = |n| in [2, 2.9], mid = [3, 8], high = rest
+       t0    below    first      mid     high
+      500    0.733    0.959    0.947    0.941
+     1000    0.691    0.972    0.926    0.955
+     2000    0.634    1.023    0.894    0.964
+     5000    0.527    0.960    0.882    1.014
+
+[diagnostic] SPEEDUP vs the explicit solver
+  solver: 990,000 explicit steps of dt=0.01 -> 225.8s per trajectory (one at a time, measured on 2000 steps)
+  UNO:    320 autoregressive steps -> 2.907s per trajectory (one at a time)
+                                      0.307s per trajectory (amortised over a batch of 10)
+  speedup 78x like-for-like, 736x batched (3094x fewer steps)
+  quote the like-for-like number: the solver probe is unbatched too. Both compare against the explicit dt=0.01 scheme, not a semi-implicit spectral solver, which would need far fewer steps.
+
+[results] wrote Work/predict/train_t1000_lap_w8_pred_t10000/results.json
+
+[draw] train_t1000_lap_w8_pred_t10000 -> Results/train_t1000_lap_w8_pred_t10000
+[draw]   psi0m0.40: R2(10000) = 0.0205 +- 0.2913, best seed 54464, 13 of 50 diverged (excluded)
+[draw]   psi0m0.20: R2(10000) = 0.1393 +- 0.3331, best seed 99999, 1 of 50 diverged (excluded)
+[draw]   psi0p0.00: R2(10000) = 0.5444 +- 0.1995, best seed 32393
+[draw]   psi0p0.20: R2(10000) = 0.1145 +- 0.3059, best seed 29935, 2 of 50 diverged (excluded)
+[draw]   psi0p0.40: R2(10000) = -0.0278 +- 0.3533, best seed 63866
+[draw]   l160: R2(10000) = 0.5419 +- 0.1870, best seed 60079
+[draw]   l192: R2(10000) = 0.4803 +- 0.1663, best seed 43125, 3 of 50 diverged (excluded)
+[draw]   l256: R2(10000) = 0.4700 +- 0.1277, best seed 98895, 6 of 50 diverged (excluded)
+[draw] WARNING l192: all 50 seeds diverged; no figures for this case
+[draw] WARNING l256: all 50 seeds diverged; no figures for this case
+[draw] comparison.png: 6 runs
+[draw] comparison_t1000.png: 10 runs
+[draw] done: 1 run folder(s) drawn, README.md lists 15 run(s) in Results/
+
+[done] total 654.4s | 735,212 parameters | report -> Results/train_t1000_lap_w8_pred_t10000
+
+======================= RESULTS =======================
+[draw] WARNING l192: all 50 seeds diverged; no figures for this case
+[draw] WARNING l256: all 50 seeds diverged; no figures for this case
+[draw] comparison.png: 6 runs
+[draw] comparison_t1000.png: 10 runs
+[draw] done: 0 run folder(s) drawn, README.md lists 15 run(s) in Results/
+
+Job finished at Fri Oct 16 02:12:09 IST 2026

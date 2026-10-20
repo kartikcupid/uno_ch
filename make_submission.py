@@ -3,14 +3,22 @@
     python make_submission.py                  redraw every complete run in
                                                Work/rollout_cache/ into
                                                Results/<label>/, then write
-                                               Results/README.md and
-                                               Results/comparison.png
+                                               Results/README.md,
+                                               Results/comparison.png and
+                                               Results/comparison_t<END>.png
+    python make_submission.py --overview       write only README.md and the
+                                               comparison images from the
+                                               caches; no run folder is
+                                               redrawn
     python make_submission.py --run LABEL      redraw one run, e.g.
                                                train_t0300_pred_t10000 or
                                                train_t0300_lap_pred_t10000
+                                               or train_t0500_lap_m24_pred_t10000
+                                               or train_t1000_lap_w32s1_pred_t10000
     python make_submission.py --rollout --end 1000 [--t-end T] [--seeds K]
                               [--schedule-from auto|PATH] [--ckpt P]
-                              [--variant lap|base]
+                              [--variant lap|base] [--modes M] [--width W]
+                              [--seed N]
                                                (re)fill that run's rollout
                                                cache with uno_predict's
                                                rollout engine, then draw it
@@ -81,6 +89,9 @@ TRAIN_KEYS = ("train_end", "npz", "epochs", "steps_per_epoch", "batch", "lr",
               "laplacian_output")
 EARLIER = "earlier_run_2026-09-08"
 LAP_NAME = "Laplacian output"
+SIZE_MARKERS = ("o", "s", "^", "D", "v")
+DEFAULT_SIZE = (40, 20)
+SEED_STYLES = ("-", "--", "-.", ":")
 
 DRAW: dict[str, Any] = dict(
     model_name   = "UNO",
@@ -93,6 +104,10 @@ DRAW: dict[str, Any] = dict(
     markevery    = 0.045,
     min_domains  = 4,
     sweep_dpi    = 300,
+    snap_field   = ("#1F4E8C", "#FFFEFB", "#D9480F"),
+    snap_error   = ("#FAF7F0", "#C2410C"),
+    snap_bg      = "#FFFEFB",
+    snap_text    = "#14213D",
 )
 
 FIG_KINDS = ("phase_ordering_kinetics", "domain_growth", "psi_distribution",
@@ -138,6 +153,8 @@ PAPER_RC: Any = {
     "legend.labelspacing": 0.35,
     "savefig.bbox": "tight",
 }
+SIZE_COLORS = ("#1F77B4", "#FF7F0E", "#2CA02C", "#D62728", "#9467BD",
+               "#8C564B", "#E377C2", "#17BECF", "#BCBD22")
 RUN_COLORS = ("#1b4f9c", "#c2188b", "#3aa655", "#c07000", "#00868b",
               "#7b3fa0")
 
@@ -272,15 +289,67 @@ def rollout_root(work=WORK):
     return os.path.join(work, "rollout_cache")
 
 
-def parse_label(label):
-    """(END, variant, t_end) of train_t<END>[_lap]_pred_t<T>, else None.
+LABEL_RE = (r"train_t(\d+)(_lap)?"
+            r"(?:_((?=[wms])(?:w\d+)?(?:m\d+)?(?:s\d+)?))?"
+            r"_pred_t(\d+)")
 
-    variant is 'lap' or 'base'; END and t_end are ints.
+
+def parse_label(label):
+    """(END, variant, t_end) of train_t<END>[_lap][_<size>]_pred_t<T>, else
+    None.
+
+    variant is 'lap' or 'base'; END and t_end are ints; the optional size
+    and seed tag (m24, w48, w44m22, w32s1) is read by label_tag.
     """
-    m = re.fullmatch(r"train_t(\d+)(_lap)?_pred_t(\d+)", label)
+    m = re.fullmatch(LABEL_RE, label)
     if not m:
         return None
-    return int(m.group(1)), ("lap" if m.group(2) else "base"), int(m.group(3))
+    return int(m.group(1)), ("lap" if m.group(2) else "base"), int(m.group(4))
+
+
+def label_tag(label):
+    """The size and seed tag of a run label ('m24', 'w48', 'w32s1', 's2',
+    ...), '' when untagged."""
+    m = re.fullmatch(LABEL_RE, label)
+    return (m.group(3) or "") if m else ""
+
+
+def label_seed(label):
+    """Training seed of a run label: N of an s<N> tag, else 0."""
+    m = re.search(r"s(\d+)$", label_tag(label))
+    return int(m.group(1)) if m else 0
+
+
+def run_size(label, meta=None):
+    """(width, modes) of a run: the cached arch, else the size tag, else the
+    defaults 40 / 20."""
+    arch = (meta or {}).get("arch") or {}
+    tag = label_tag(label)
+    w = re.search(r"w(\d+)", tag)
+    mo = re.search(r"m(\d+)", tag)
+    width = arch.get("width") or (int(w.group(1)) if w else DEFAULT_SIZE[0])
+    modes = arch.get("modes") or (int(mo.group(1)) if mo else DEFAULT_SIZE[1])
+    return int(width), int(modes)
+
+
+def fmt_params(n, digits=2):
+    """25110000 -> '25.11M'; None -> 'n/a'."""
+    return "n/a" if not n else f"{n / 1e6:.{digits}f}M"
+
+
+def size_text(label, meta=None, n_params=None):
+    """'modes 24, 25.1M': the width (when not the default 40), the modes, the
+    parameter count when known and the training seed (when not 0)."""
+    width, modes = run_size(label, meta)
+    parts = []
+    if width != 40:
+        parts.append(f"width {width}")
+    parts.append(f"modes {modes}")
+    if n_params:
+        parts.append(fmt_params(n_params, 1))
+    if label_seed(label):
+        parts.append(f"seed {label_seed(label)}")
+    return ", ".join(parts)
 
 
 def run_variant(label, meta=None):
@@ -296,9 +365,9 @@ def variant_text(variant):
     return f"{LAP_NAME}" if variant == "lap" else "base"
 
 
-def train_dir_name(end, variant):
+def train_dir_name(end, variant, tag=""):
     return f"train_t{int(round(float(end))):04d}" + (
-        "_lap" if variant == "lap" else "")
+        "_lap" if variant == "lap" else "") + (f"_{tag}" if tag else "")
 
 
 def results_json(label, work=WORK):
@@ -358,7 +427,9 @@ def discover(work=WORK):
         return out
     def order(name):
         p = parse_label(name)
-        return (0, p[0], p[1] == "lap", p[2], name) if p else (1, 0, 0, 0, name)
+        if not p:
+            return (1, 0, 0, 0, "", name)
+        return (0, p[0], p[1] == "lap", p[2], label_tag(name), name)
 
     for name in sorted(os.listdir(root), key=order):
         cdir = os.path.join(root, name)
@@ -371,13 +442,30 @@ def discover(work=WORK):
     return out
 
 
+def survival_time(t, r2, thr):
+    """First time r2 drops below thr, the last time of the array if never."""
+    c = first_below(t, r2, thr)
+    return float(t[-1]) if c is None else c
+
+
 def load_case(cdir, case, seeds, meta, snaps=True):
     """Stack the cached per-seed arrays of one case.
 
-    Seeds are cut to a common length if a rollout ever stopped early (a
-    non-finite state); full_len keeps each seed's own length.  Files that
-    predate fe_*, t_end and train_t_end are read too: t_end is then the
-    last rollout time and train_t_end comes from meta.
+    A seed file written by the current rollout carries diverged_at: NaN for
+    a seed that ran to t_end, else the time its field went non-finite or past
+    max |psi| = diverge_abs (the file is cut just before it).  Diverged seeds
+    are left out of every stacked array, so the rest are full length and the
+    plotting and statistics code is unchanged.  d["n_total"] is the number of
+    seeds of the case, d["n_diverged"] / d["diverged_seeds"] /
+    d["diverged_at"] name the ones left out and d["diverged"] keeps their own
+    truncated times and R^2 for the survival statistics.  When every seed
+    diverged, d["seeds"] is empty and no array is stacked.
+
+    A file without diverged_at that stops early is an older whole-chunk
+    truncation: the seeds are then cut to the shortest with a warning, and
+    d["n_truncated_legacy"] counts those files.  Files that predate fe_*,
+    t_end and train_t_end are read too: t_end is then the last rollout time
+    and train_t_end comes from meta.
     """
     rows = []
     for sd in seeds:
@@ -385,30 +473,48 @@ def load_case(cdir, case, seeds, meta, snaps=True):
             keep = [k for k in z.files
                     if snaps or k not in ("snap_truth", "snap_pred")]
             rows.append({k: z[k] for k in keep})
+    seeds = [int(sd) for sd in seeds]
+    at = np.array([float(r["diverged_at"]) if "diverged_at" in r else np.nan
+                   for r in rows])
+    gone = np.isfinite(at)
+    lost = [dict(seed=seeds[i], at=float(at[i]),
+                 times=np.asarray(rows[i]["times"], np.float64),
+                 r2=np.asarray(rows[i]["r2"], np.float64))
+            for i in np.nonzero(gone)[0]]
+    r0 = rows[0]
+    t_end = (float(r0["t_end"]) if "t_end" in r0
+             else float(max(r["times"][-1] for r in rows)))
+    tt = float(r0["train_t_end"]) if "train_t_end" in r0 else 0.0
+    d: dict[str, Any] = dict(
+        case=case, n_total=len(rows), n_diverged=len(lost),
+        diverged_seeds=[x["seed"] for x in lost],
+        diverged_at=[x["at"] for x in lost], diverged=lost,
+        l=int(r0["l"]), off=float(r0["off"]), alpha=float(r0["alpha"]),
+        dt_max=float(r0["dt_max"]), t_end=t_end,
+        train_t_end=tt or float(meta.get("train_t_end") or 0.0) or None,
+        snap_times=np.asarray(r0["snap_times"], dtype=np.float64))
+    rows = [r for r, g in zip(rows, gone) if not g]
+    d["seeds"] = [sd for sd, g in zip(seeds, gone) if not g]
+    d["n_truncated_legacy"] = sum(
+        "diverged_at" not in r and float(r["times"][-1]) < t_end - 1e-6
+        for r in rows)
+    if not rows:
+        d.update(full_len=np.zeros(0, dtype=int), times=np.zeros(0))
+        return d
     full = np.array([len(r["times"]) for r in rows])
     n = int(full.min())
     if full.max() != n:
         print(f"[draw] WARNING {case}: rollouts of different length "
               f"({n}..{full.max()} points); cut to {n}", flush=True)
-    d: dict[str, Any] = dict(case=case, seeds=[int(s) for s in seeds],
-                             full_len=full,
-                             times=np.asarray(rows[0]["times"][:n], float))
+    d.update(full_len=full, times=np.asarray(rows[0]["times"][:n], float))
     for k in SERIES:
         d[k] = np.stack([np.asarray(r[k][:n], dtype=np.float64) for r in rows])
     if all("fe_truth" in r for r in rows):
         for k in ("fe_truth", "fe_pred"):
             d[k] = np.stack([np.asarray(r[k][:n], np.float64) for r in rows])
-    d["snap_times"] = np.asarray(rows[0]["snap_times"], dtype=np.float64)
     if snaps:
         d["snap_truth"] = np.stack([r["snap_truth"] for r in rows])
         d["snap_pred"] = np.stack([r["snap_pred"] for r in rows])
-    r0 = rows[0]
-    d["l"], d["off"] = int(r0["l"]), float(r0["off"])
-    d["alpha"], d["dt_max"] = float(r0["alpha"]), float(r0["dt_max"])
-    d["t_end"] = (float(r0["t_end"]) if "t_end" in r0
-                  else float(max(r["times"][-1] for r in rows)))
-    tt = float(r0["train_t_end"]) if "train_t_end" in r0 else 0.0
-    d["train_t_end"] = tt or float(meta.get("train_t_end") or 0.0) or None
     return d
 
 
@@ -452,15 +558,47 @@ def pick_seeds(d):
                 worst=int(order[0])), traj
 
 
+def div_text(d):
+    """' (3 of 50 diverged, excluded)' for a case with diverged seeds, else
+    the empty string: the legend note of the comparison figures."""
+    n = d.get("n_diverged", 0)
+    return (f" ({n} of {d['n_total']} diverged, excluded)" if n else "")
+
+
 def case_stats(d, thr):
-    """R^2 at t_end, trajectory mean, survival and the picked seeds."""
+    """R^2 at t_end, trajectory mean, survival and the picked seeds.
+
+    The R^2 statistics and the picked seeds cover the seeds that reached
+    t_end.  Survival covers every seed: a diverged seed fails at its first
+    crossing of the threshold, or at its last good time when it diverged
+    before crossing.  n_seeds is the number of seeds of the case.
+    """
+    n_all = d.get("n_total", len(d["seeds"]))
+    div = d.get("diverged") or []
+    held_div = [survival_time(x["times"], x["r2"], thr) for x in div]
+    extra = dict(n_diverged=len(div), n_truncated_legacy=int(
+        d.get("n_truncated_legacy", 0)),
+        diverged_seeds=list(d.get("diverged_seeds") or []),
+        diverged_at=list(d.get("diverged_at") or []))
+    if not len(d["seeds"]):
+        nan = float("nan")
+        return dict(
+            n_seeds=n_all, steps=0, t_end=float(d["t_end"]),
+            r2_at_end=dict(mean=nan, sd=nan, median=nan, best=nan,
+                           worst=nan),
+            r2_trajectory_mean=dict(mean=nan, sd=nan),
+            survival=dict(threshold=float(thr),
+                          mean=float(np.mean(held_div)) if div else nan,
+                          sd=sd_of(held_div), n_survive_to_end=0,
+                          mean_curve_crosses=None),
+            seeds={}, **extra)
     t, r2 = d["times"], d["r2"]
     fin = r2[:, -1]
     picks, traj = pick_seeds(d)
     cross = [first_below(t, r2[k], thr) for k in range(r2.shape[0])]
-    held = [float(t[-1]) if c is None else c for c in cross]
+    held = [float(t[-1]) if c is None else c for c in cross] + held_div
     return dict(
-        n_seeds=len(d["seeds"]), steps=int(len(t) - 1), t_end=float(t[-1]),
+        n_seeds=n_all, steps=int(len(t) - 1), t_end=float(t[-1]),
         r2_at_end=dict(mean=float(fin.mean()), sd=sd_of(fin),
                        median=float(np.median(fin)), best=float(fin.max()),
                        worst=float(fin.min())),
@@ -471,7 +609,8 @@ def case_stats(d, thr):
                       mean_curve_crosses=first_below(t, r2.mean(axis=0), thr)),
         seeds={k: dict(seed=int(d["seeds"][i]),
                        r2_trajectory_mean=float(traj[i]),
-                       r2_at_end=float(fin[i])) for k, i in picks.items()})
+                       r2_at_end=float(fin[i])) for k, i in picks.items()},
+        **extra)
 
 
 def horizons(meta, d=None):
@@ -651,6 +790,7 @@ def fig_snapshots(plt, d, meta, st, path, times=None, every=None):
     times picks the columns (default every snapshot of the case); every marks
     the long-horizon figure in the title.
     """
+    from matplotlib.colors import LinearSegmentedColormap
     name = DRAW["model_name"]
     t0, t1, _ = horizons(meta, d)
     pk = st["seeds"]
@@ -658,7 +798,21 @@ def fig_snapshots(plt, d, meta, st, path, times=None, every=None):
     cols = [j for j, x in enumerate(d["snap_times"])
             if times is None or any(abs(x - w) < 1e-6 for w in times)]
     n_s = len(cols)
-    fig = plt.figure(figsize=(3.4 * n_s + 1.3, 10.9))
+    cm_f = LinearSegmentedColormap.from_list("snap_field", DRAW["snap_field"])
+    cm_e = LinearSegmentedColormap.from_list("snap_error", DRAW["snap_error"])
+    ink = DRAW["snap_text"]
+    with plt.rc_context({"text.color": ink, "axes.labelcolor": ink,
+                         "xtick.color": ink, "ytick.color": ink,
+                         "axes.edgecolor": DRAW["snap_bg"]}):
+        return _snapshots_figure(plt, d, meta, path, every, pk, b, cols, n_s,
+                                 cm_f, cm_e, name, t0, t1)
+
+
+def _snapshots_figure(plt, d, meta, path, every, pk, b, cols, n_s, cm_f,
+                      cm_e, name, t0, t1):
+    """The snapshot grid of fig_snapshots, in the presentation colours."""
+    fig = plt.figure(figsize=(3.4 * n_s + 1.3, 10.9),
+                     facecolor=DRAW["snap_bg"])
     gs = fig.add_gridspec(3, n_s + 1, width_ratios=[1] * n_s + [0.05],
                           wspace=0.06, hspace=0.10, top=0.82)
     rows = ("ground truth", f"{name} prediction", "absolute error")
@@ -673,14 +827,16 @@ def fig_snapshots(plt, d, meta, st, path, times=None, every=None):
         for r in range(3):
             ax = fig.add_subplot(gs[r, c])
             ax.set_xticks([]); ax.set_yticks([])
+            for sp in ax.spines.values():
+                sp.set_visible(False)
             if r == 0:
-                im_f = ax.imshow(tru, cmap="RdBu_r", vmin=-1, vmax=1)
+                im_f = ax.imshow(tru, cmap=cm_f, vmin=-1, vmax=1)
                 ax.set_title(f"$t$ = {ts:g}" + "\n"
                              + f"$R^2$ = {fmt(r2)}", fontsize=12)
             elif r == 1:
-                im_f = ax.imshow(pre, cmap="RdBu_r", vmin=-1, vmax=1)
+                im_f = ax.imshow(pre, cmap=cm_f, vmin=-1, vmax=1)
             else:
-                im_e = ax.imshow(np.abs(tru - pre), cmap="magma", vmin=0,
+                im_e = ax.imshow(np.abs(tru - pre), cmap=cm_e, vmin=0,
                                  vmax=1)
             if c == 0:
                 ax.set_ylabel(rows[r], fontsize=13, fontweight="bold")
@@ -703,7 +859,8 @@ def fig_snapshots(plt, d, meta, st, path, times=None, every=None):
         + ("" if every is None else f"\nlong-horizon snapshots, every "
            f"{every:g} up to $t = {t1:g}$"),
         fontsize=13, fontweight="bold")
-    fig.savefig(path, dpi=130, bbox_inches="tight")
+    fig.savefig(path, dpi=130, bbox_inches="tight",
+                facecolor=fig.get_facecolor())
     plt.close(fig)
     return dict(rule="highest trajectory-mean R^2", seed=bs["seed"],
                 panels=shown)
@@ -1064,6 +1221,8 @@ def fig_r2_sweep(plt, comps, boxes, meta, base):
     thr = float(meta["threshold"])
     top = [(rf"$\bar\psi_0 = {d['off']:+.1f}$", d) for d in comps]
     bot = [(f"$l = {d['l']}$", d) for d in boxes]
+    if not top:
+        return
     with plt.rc_context(PAPER_RC):
         fig, axs = plt.subplots(2 if bot else 1, 1, figsize=(4.4, 6.6 if bot
                                                               else 3.4),
@@ -1078,16 +1237,58 @@ def fig_r2_sweep(plt, comps, boxes, meta, base):
         plt.close(fig)
 
 
-def fig_comparison(plt, runs, path):
-    """Critical mean R^2(t) of every run on one log-t axis."""
+def overview_runs(runs):
+    """The runs of comparison.png: the untagged ones (default size, training
+    seed 0) when there are two or more, else every run."""
+    plain = [r for r in runs if not label_tag(r["label"])]
+    return plain if len(plain) >= 2 else runs
+
+
+def size_ends(runs):
+    """Training horizons END with a tagged Laplacian-output run, ascending:
+    each gets a comparison_t<END>.png."""
+    ends = set()
+    for r in runs:
+        p = parse_label(r["label"])
+        if p and p[1] == "lap" and label_tag(r["label"]):
+            ends.add(p[0])
+    return sorted(ends)
+
+
+def size_runs(runs, end):
+    """Every Laplacian-output run of one END, default size included."""
+    out = []
+    for r in runs:
+        p = parse_label(r["label"])
+        if p and p[1] == "lap" and p[0] == end:
+            out.append(r)
+    return out
+
+
+def legend_below(ax, **kw):
+    """Legend under the axes, so no curve is covered."""
+    return ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.15), **kw)
+
+
+def fig_comparison(plt, runs, path, variants=()):
+    """Critical mean R^2(t) of the runs on one log-t axis.
+
+    variants lists the comparison_t<END>.png files to point to in the
+    subtitle.  Runs of other model sizes or training seeds (tagged labels)
+    are told apart by markers; comparison.png itself draws only untagged ones
+    whenever there are two or more (overview_runs).
+    """
     name = DRAW["model_name"]
     fig, ax = plt.subplots(figsize=(9.6, 5.8))
     vals = []
     ends: list[Any] = []
+    tags: list[str] = []
     for r in runs:
         _, _, tt = horizons(r["meta"], r["crit"])
         if tt not in ends:
             ends.append(tt)
+        if label_tag(r["label"]) not in tags:
+            tags.append(label_tag(r["label"]))
     for r in runs:
         d, meta = r["crit"], r["meta"]
         _, t1, tt = horizons(meta, d)
@@ -1095,11 +1296,19 @@ def fig_comparison(plt, runs, path):
         c = RUN_COLORS[ends.index(tt) % len(RUN_COLORS)]
         m = d["r2"].mean(axis=0)
         vals.append(m)
+        tag = label_tag(r["label"])
+        kind = variant_text(run_variant(r["label"], meta))
+        if tag or len(tags) > 1:
+            kind += ", " + size_text(r["label"], meta, r.get("n_params"))
+        mark = dict(marker=SIZE_MARKERS[tags.index(tag) % len(SIZE_MARKERS)],
+                    markersize=5, markevery=DRAW["markevery"]
+                    ) if tag else {}
         ax.plot(d["times"], m, lw=2.2, color=c, ls="-" if lap else "--",
                 label=f"{r['label']}: trained to $t$ = {fmt(tt, 'g')} "
-                      f"({variant_text(run_variant(r['label'], meta))}), "
-                      f"{len(d['seeds'])} seeds, $R^2({t1:g})$ = {m[-1]:.3f}"
-                      f"{d.get('crit_note', '')}")
+                      f"({kind}), "
+                      f"{d.get('n_total', len(d['seeds']))} seeds, "
+                      f"$R^2({t1:g})$ = {m[-1]:.3f}{div_text(d)}"
+                      f"{d.get('crit_note', '')}", **mark)
         if tt:
             ax.axvline(tt, color=c, ls=":", lw=1.4)
     thr = float(runs[0]["meta"]["threshold"])
@@ -1110,22 +1319,102 @@ def fig_comparison(plt, runs, path):
     ax.set_xlabel("time  $t$  (log)", fontsize=12)
     ax.set_ylabel(r"mean $R^2$ vs. ground truth", fontsize=12)
     ax.grid(alpha=0.3, ls=":", which="both")
-    ax.legend(loc="lower left", fontsize=9)
-    ax.set_title(f"Cahn-Hilliard {name} - critical quench, every run "
-                 f"(solid: {LAP_NAME}, dashed: base; dotted: training "
-                 f"horizon)", fontsize=11,
-                 fontweight="bold")
-    fig.tight_layout()
+    legend_below(ax, fontsize=9)
+    kinds = f"solid: {LAP_NAME}, dashed: base; dotted: training horizon"
+    if any(tags):
+        kinds += "; markers: other model size or training seed"
+        title = (f"Cahn-Hilliard {name} - critical quench, every run "
+                 f"({kinds})")
+        note = ""
+    else:
+        title = f"Cahn-Hilliard {name} - critical quench, default model"
+        note = kinds
+    if variants:
+        note += ("" if not note else ". ") + (
+            "Model size and training seed: " + ", ".join(variants))
+    ax.set_title(title, fontsize=11, fontweight="bold", pad=18 if note else 6)
+    if note:
+        ax.text(0.5, 1.012, note, transform=ax.transAxes, ha="center",
+                va="bottom", fontsize=9, color="0.3")
+    fig.savefig(path, dpi=150, bbox_inches="tight")
+    plt.close(fig)
+
+
+def fig_size_comparison(plt, runs, end, path):
+    """Critical mean R^2(t) of the Laplacian-output runs of one END: one
+    distinct colour per (width, modes) configuration (SIZE_COLORS, ordered by
+    parameter count; the default size in black), one line style per seed."""
+    name = DRAW["model_name"]
+    n_par: dict[tuple[int, int], int] = {}
+    for r in runs:
+        key = run_size(r["label"], r["meta"])
+        n_par[key] = max(n_par.get(key, 0), r.get("n_params") or 0)
+    if 0 in n_par.values():
+        configs = sorted(n_par)
+    else:
+        configs = sorted(n_par, key=lambda k: (n_par[k], k))
+    others = [k for k in configs if k != DEFAULT_SIZE]
+    colors = {k: SIZE_COLORS[i % len(SIZE_COLORS)]
+              for i, k in enumerate(others)}
+    colors[DEFAULT_SIZE] = "black"
+    order = sorted(runs, key=lambda r: (
+        configs.index(run_size(r["label"], r["meta"])), label_seed(r["label"])))
+    multi = any(label_seed(r["label"]) for r in order)
+    fig, ax = plt.subplots(figsize=(9.6, 5.8))
+    vals = []
+    for r in order:
+        d = r["crit"]
+        _, t1, _ = horizons(r["meta"], d)
+        key = run_size(r["label"], r["meta"])
+        seed = label_seed(r["label"])
+        m = d["r2"].mean(axis=0)
+        vals.append(m)
+        head = f"{fmt_params(n_par[key], 1)} " if n_par[key] else ""
+        lw = 2.8 if key == DEFAULT_SIZE else 2.2
+        ax.plot(d["times"], m, color=colors[key], lw=lw,
+                ls=SEED_STYLES[seed % len(SEED_STYLES)],
+                label=f"{head}(width {key[0]}, modes {key[1]})"
+                      + (f", seed {seed}" if multi else "") + ": "
+                      f"$R^2$({t1:g}) = {m[-1]:.3f}{div_text(d)}"
+                      f"{d.get('crit_note', '')}")
+    ax.axvline(end, color="0.3", ls=":", lw=1.4,
+               label=f"training horizon $t$ = {end}")
+    thr = float(order[0]["meta"]["threshold"])
+    ax.axhline(thr, color="0.5", ls="--", lw=1.2,
+               label=f"threshold $R^2$ = {thr:.2f}")
+    lo = min(thr, min(float(np.nanmin(v)) for v in vals))
+    ax.set_xscale("log")
+    ax.set_ylim(lo - 0.06 * (1.02 - lo), 1.02)
+    ax.set_xlabel("time  $t$  (log)", fontsize=12)
+    ax.set_ylabel(r"mean $R^2$ vs. ground truth", fontsize=12)
+    ax.grid(alpha=0.3, ls=":", which="both")
+    legend_below(ax, fontsize=9, ncol=2)
+    ax.set_title(f"Cahn-Hilliard {name} - critical quench, trained to t = "
+                 f"{end}: model size"
+                 + (" and training seed" if multi else "") + f" ({LAP_NAME})",
+                 fontsize=11, fontweight="bold")
     fig.savefig(path, dpi=150, bbox_inches="tight")
     plt.close(fig)
 
 
 def load_run(run, snaps=True):
-    """Every case of a complete run: (compositions, boxes incl. l128)."""
+    """Every case of a complete run: (compositions, boxes incl. l128).
+
+    A case whose seeds all diverged has nothing to draw: it is left out with
+    a printed warning and recorded in run["skipped"].
+    """
     meta, cdir = run["meta"], run["cdir"]
     comps, boxes = [], []
+    run["skipped"] = {}
     for case, c in meta["cases"].items():
         d = load_case(cdir, case, case_seeds(meta, case), meta, snaps=snaps)
+        if not d["seeds"]:
+            run["skipped"][case] = dict(
+                n_seeds=d["n_total"], diverged_seeds=d["diverged_seeds"],
+                diverged_at=d["diverged_at"])
+            print(f"[draw] WARNING {case}: all {d['n_total']} seeds diverged; "
+                  f"no figures for this case", flush=True)
+            continue
         d["kind"] = c.get("kind", "composition")
         (comps if d["kind"] == "composition" else boxes).append(d)
     comps.sort(key=lambda d: d["off"])
@@ -1142,6 +1431,10 @@ def draw_run(plt, run, results):
     os.makedirs(out, exist_ok=True)
     print(f"[draw] {label} -> {out}", flush=True)
     comps, boxes = load_run(run)
+    if not comps and not boxes:
+        print(f"[draw] WARNING {label}: every case diverged; nothing drawn",
+              flush=True)
+        return None
     thr = float(meta["threshold"])
     cases: dict[str, Any] = {}
     files: list[str] = []
@@ -1188,9 +1481,12 @@ def draw_run(plt, run, results):
             gt_devices=c.get("gt_devices"))
         print(f"[draw]   {case}: R2({d['times'][-1]:g}) = "
               f"{st['r2_at_end']['mean']:.4f} +- {st['r2_at_end']['sd']:.4f}"
-              f", best seed {st['seeds']['best']['seed']}", flush=True)
+              f", best seed {st['seeds']['best']['seed']}"
+              + (f", {st['n_diverged']} of {st['n_seeds']} diverged "
+                 f"(excluded)" if st["n_diverged"] else ""), flush=True)
     fig_r2_sweep(plt, comps, boxes, meta, os.path.join(out, "r2_sweep"))
-    files += ["r2_sweep.png", "r2_sweep.pdf"]
+    if comps:
+        files += ["r2_sweep.png", "r2_sweep.pdf"]
     fig_composition_all(plt, comps, meta, os.path.join(out,
                                                        "composition_all.png"))
     write_composition_csv(os.path.join(out, "composition.csv"), cases)
@@ -1210,6 +1506,9 @@ def draw_run(plt, run, results):
                              for k, c in cases.items()},
         seeds=meta_seeds(meta),
         n_seeds=len(meta_seeds(meta)),
+        n_diverged={k: c["n_diverged"] for k, c in cases.items()},
+        diverge_abs=meta.get("diverge_abs"),
+        skipped_cases=run.get("skipped") or {},
         schedules={k: case_schedule(meta, c) for k, c in meta["cases"].items()},
         best_seed_rule=("per case, the seed with the highest trajectory-mean "
                         "R^2 (mean of R^2 over every rollout time); median "
@@ -1239,7 +1538,7 @@ def model_card(meta, work, label=""):
     """meta, plus n_params and training_config from the model folder.
 
     Caches written before uno_predict recorded them (the migrated t300 one)
-    lack both.  They are then read from Work/models/train_t<END>[_lap]/, but only
+    lack both.  They are then read from the run's Work/models/ folder, but only
     when that folder's uno_ch_best.pt is the checkpoint the cache was built
     from (same fingerprint): its uno_ch_train_config.json and the last
     parameter count in its uno_ch_train.log.
@@ -1250,7 +1549,8 @@ def model_card(meta, work, label=""):
     if not tt:
         return meta
     variant = run_variant(label, meta)
-    mdir = os.path.join(work, "models", train_dir_name(tt, variant))
+    mdir = os.path.join(work, "models",
+                        train_dir_name(tt, variant, label_tag(label)))
     best = os.path.join(mdir, "uno_ch_best.pt")
     if not (os.path.isfile(best) and fingerprint(best) == meta.get("fingerprint")):
         return meta
@@ -1302,11 +1602,24 @@ def write_report(path, meta, man, res):
       + ("  (the head predicts M, the increment is its 5-point Laplacian)"
          if run_variant(man["label"], meta) == "lap" else
          "  (the head predicts the increment directly)"))
+    wd, mo = run_size(man["label"], meta)
+    w(f"  model size                width {wd}, modes {mo}"
+      + (f"  (label tag {label_tag(man['label'])})"
+         if label_tag(man["label"]) else "  (default size)"))
+    w(f"  training seed             {label_seed(man['label'])}"
+      + ("" if label_seed(man["label"]) else "  (default)"))
     w(f"  evaluated on lattice      l = {meta.get('base_l')}  (box sizes "
       + ", ".join(str(c["lattice"]) for c in man["cases"].values()
                   if c["kind"] == "box") + ")")
     w(f"  rollout horizon           t = {t0:g} -> {t1:g}")
     w(f"  test seeds                {man['n_seeds']}")
+    n_div = sum((man.get("n_diverged") or {}).values()) + sum(
+        v["n_seeds"] for v in (man.get("skipped_cases") or {}).values())
+    lim = (f"|psi| > {meta['diverge_abs']:g}" if meta.get("diverge_abs")
+           else "|psi| beyond the limit")
+    if n_div or man.get("skipped_cases"):
+        w(f"  diverged rollouts         {n_div} (non-finite or {lim}), "
+          f"excluded from the R^2 means; see 'n div' in section 4")
     w(f"  ground truth solved on    {meta.get('gt_devices') or 'n/a'}")
     w("")
     w("  architecture")
@@ -1437,7 +1750,8 @@ def write_report(path, meta, man, res):
     w("-" * 78)
     w(f"  {'case':>10} {'alpha':>5} {'dt_max':>6} {'steps':>5} "
       f"{'R2(t_end)':>16} {'median':>7} {'best':>6} {'worst':>6} "
-      f"{'mean R2':>15} {'survives to t':>15} {'never':>6} {'n pred':>7}")
+      f"{'mean R2':>15} {'survives to t':>15} {'never':>6} {'n pred':>7} "
+      f"{'n div':>5}")
     for case, c in man["cases"].items():
         e, m, s = c["r2_at_end"], c["r2_trajectory_mean"], c["survival"]
         sc = c["schedule"]
@@ -1446,7 +1760,8 @@ def write_report(path, meta, man, res):
           f"{e['median']:7.4f} {e['best']:6.3f} {e['worst']:6.3f} "
           f"{m['mean']:7.4f} +-{m['sd']:.4f} {s['mean']:7.0f} +-{s['sd']:<5.0f}"
           f" {s['n_survive_to_end']:>2d}/{c['n_seeds']:<3d}"
-          f" {fmt(c['growth']['zero_crossing']['n_pred'], '7.4f')}")
+          f" {fmt(c['growth']['zero_crossing']['n_pred'], '7.4f')}"
+          f" {c['n_diverged']:>5d}")
     w("")
     w("  R2(t_end): mean +- sd over seeds of each seed's R^2 at the end of")
     w("  the rollout. mean R2: the trajectory mean (mean of R^2 over every")
@@ -1454,6 +1769,20 @@ def write_report(path, meta, man, res):
     w("  first time R^2 drops below the threshold (t_end if never); never:")
     w("  seeds that stay above it to t_end. n pred: fitted growth exponent")
     w("  of the zero-crossing L over the late window [t_end/4, t_end].")
+    w("  n div: seeds whose rollout diverged (non-finite or beyond the")
+    w("  |psi| limit). They are left out of R2, mean R2, best / worst and")
+    w("  n pred; survives counts them as failed at their first crossing of")
+    w("  the threshold or at their last good time; never counts them in the")
+    w("  seeds of the case (the denominator).")
+    legacy = [k for k, c in man["cases"].items() if c.get("n_truncated_legacy")]
+    for case in legacy:
+        w(f"  WARNING {case}: {man['cases'][case]['n_truncated_legacy']} "
+          f"older seed file(s) stop before t_end without a diverged_at "
+          f"flag;")
+        w("  the case is cut to the shortest. Run uno_predict.py again for "
+          "this run: only those seeds are rolled out again.")
+    for case, sk in (man.get("skipped_cases") or {}).items():
+        w(f"  {case}: all {sk['n_seeds']} seeds diverged; no figures drawn")
     diag = [k for k in ("transfer", "drift", "predictability") if res.get(k)]
     if diag:
         w("")
@@ -1506,62 +1835,121 @@ def write_report(path, meta, man, res):
 def run_summary(run):
     """Headline numbers of a complete run, from its cache (no snapshots)."""
     comps, boxes = load_run(run, snaps=False)
+    if not comps and not boxes:
+        return None
     thr = float(run["meta"]["threshold"])
     box_off = float(run["meta"].get("box_off", 0.0))
     crit = next((d for d in comps if abs(d["off"] - box_off) < 1e-9),
                 comps[0] if comps else boxes[0])
-    crit["crit_note"] = ("" if abs(crit["off"] - box_off) < 1e-9 else
-                         f" (psi0 = {crit['off']:+.1f}: no critical case)")
+    skipped = run.get("skipped") or {}
+    lost = skipped.get(comp_case(box_off))
+    if lost:
+        crit["crit_note"] = (f" (critical case: all {lost['n_seeds']} seeds "
+                             f"diverged; psi0 = {crit['off']:+.1f} shown)")
+    else:
+        crit["crit_note"] = ("" if abs(crit["off"] - box_off) < 1e-9 else
+                             f" (psi0 = {crit['off']:+.1f}: no critical case)")
+    card = model_card(run["meta"], run.get("work", WORK), run["label"])
     return dict(label=run["label"], meta=run["meta"], crit=crit,
+                crit_lost=int(lost["n_seeds"]) if lost else 0,
+                n_params=card.get("n_params"), skipped=skipped,
                 comps=[(d, case_stats(d, thr)) for d in comps],
                 boxes=[(d, case_stats(d, thr)) for d in boxes])
 
 
-def write_readme(summaries, pending, results, work, path):
+def diverged_cell(crit, stats, skipped=None, crit_lost=0):
+    """The README run-table cell: diverged seeds of the critical case and of
+    every case of the run, plus any older truncated seed files.  A case
+    skipped because all its seeds diverged counts in full; crit_lost is the
+    seed count of the critical case when that case was skipped."""
+    lost = sum(v["n_seeds"] for v in (skipped or {}).values())
+    n_all = sum(x["n_diverged"] for x in stats) + lost
+    legacy = sum(x["n_truncated_legacy"] for x in stats)
+    parts = []
+    if n_all:
+        n_crit = (f"{crit_lost} of {crit_lost}" if crit_lost else
+                  f"{crit['n_diverged']} of {crit['n_seeds']}")
+        parts.append(f"{n_crit} critical, {n_all} of "
+                     f"{sum(x['n_seeds'] for x in stats) + lost} in all "
+                     f"cases")
+    if legacy:
+        parts.append(f"{legacy} older truncated seed files (re-predict)")
+    return "; ".join(parts) or "0"
+
+
+def write_readme(summaries, pending, results, work, path, size_images=()):
     name = DRAW["model_name"]
     L = [f"# Results - Cahn-Hilliard {name}", "",
          "Report material only. Every file here is regenerated from the "
          "rollout", f"caches in `{rollout_root(work)}/` by "
          "`python make_submission.py`; no model is", "loaded and no "
          "trajectory is re-solved. One folder per run, named", "`train_t<END>"
-         "[_lap]_pred_t<T>`: a model trained on data to t = END,", "rolled "
-         "out to t = T. `_lap` marks the Laplacian-output model (the head "
-         "predicts", "M and the increment is its 5-point Laplacian); runs "
-         "without it are the base", "model (direct increment) and are kept "
-         "for comparison.", "", "## Runs", "",
-         "| run | model | trained to | predicted to | seeds | critical "
-         "R2(t_end) | folder |", "|---|---|---|---|---|---|---|"]
+         "[_lap][_<size>]_pred_t<T>`: a model trained on data to t = END,",
+         "rolled out to t = T. `_lap` marks the Laplacian-output model (the "
+         "head predicts", "M and the increment is its 5-point Laplacian); "
+         "runs without it are the base", "model (direct increment) and are "
+         "kept for comparison. `<size>` (`m24`, `w48`,", "`w44m22`) marks a "
+         "model with other than the default 20 Fourier modes / width 40 "
+         "and", "`s<N>` (`w32s1`) a model trained with training seed N "
+         "instead of 0 (a seed", "replicate of the same architecture); an "
+         "untagged run has the default size", "and seed 0.", "", "## Runs", "",
+         "| run | model | parameters | trained to | predicted to | seeds | "
+         "diverged | critical R2(t_end) | folder |",
+         "|---|---|---|---|---|---|---|---|---|"]
     for s in summaries:
         m = s["meta"]
         _, t1, tt = horizons(m)
-        e = case_stats(s["crit"], float(m["threshold"]))
-        L.append(f"| {s['label']} | "
-                 f"{variant_text(run_variant(s['label'], m))} | "
+        thr = float(m["threshold"])
+        e = case_stats(s["crit"], thr)
+        every = [st for _, st in s["comps"]] + [
+            st for d, st in s["boxes"] if d["kind"] == "box"]
+        kind = variant_text(run_variant(s["label"], m))
+        if label_tag(s["label"]):
+            kind += ", " + size_text(s["label"], m)
+        lost = s.get("crit_lost", 0)
+        div = diverged_cell(e, every, s["skipped"], lost)
+        L.append(f"| {s['label']} | {kind} | "
+                 f"{fmt_params(s.get('n_params'))} | "
                  f"t = {fmt(tt, 'g')} | t = {t1:g} | "
-                 f"{len(s['crit']['seeds'])} | R2({t1:g}) = "
+                 f"{lost or e['n_seeds']} | {div} | "
+                 f"R2({t1:g}) = "
                  f"{e['r2_at_end']['mean']:.4f} +- {e['r2_at_end']['sd']:.4f}"
                  f"{s['crit'].get('crit_note', '')} | `{s['label']}/` |")
     for lab, why in pending:
-        L.append(f"| {lab} | - | - | - | - | not complete: {why} | - |")
-    L += ["", "R2(t_end) is the mean over seeds of each seed's R2 against "
-          "the ground", "truth at the end of that run's rollout, +- one "
-          "standard deviation", "across seeds. Runs with different horizons "
-          "are not comparable at", "their end points; `comparison.png` puts "
-          "the critical curves of every", "run on one log-t axis instead. "
-          "In the per-run tables, max and min", "are the extreme seeds' "
-          "R2(t_end); the best seed is chosen by", "trajectory-mean R2, so "
-          "it need not be the one with the max.", ""]
+        L.append(f"| {lab} | - | - | - | - | - | - | not complete: {why} "
+                 f"| - |")
+    shown = ("every run" if len(overview_runs(summaries)) == len(summaries)
+             else "the default-size, seed-0 runs (every training horizon, "
+                  "base and Laplacian output)")
+    sizes = (" `comparison_t<END>.png` does the same for the model-size and "
+             "training-seed variants of one END (Laplacian output); written: "
+             + ", ".join(f"`{f}`" for f in size_images) + "." if size_images
+             else "")
+    L += [""] + textwrap.wrap(
+        "R2(t_end) is the mean over seeds of each seed's R2 against the "
+        "ground truth at the end of that run's rollout, +- one standard "
+        "deviation across seeds. A seed whose rollout diverged (non-finite "
+        "or |psi| beyond the limit) is counted in the `diverged` column and "
+        "left out of every R2 mean; the survival statistics count it as "
+        "failed. Runs with different horizons are not "
+        "comparable at their end points; `comparison.png` puts the "
+        f"critical curves of {shown} on one log-t axis instead.{sizes} "
+        "In the per-run tables, max and min are the extreme seeds' "
+        "R2(t_end); the best seed is chosen by trajectory-mean R2, so it "
+        "need not be the one with the max.", 70, break_long_words=False,
+        break_on_hyphens=False) + [""]
     for s in summaries:
         m = s["meta"]
         _, t1, tt = horizons(m)
         L += [f"## {s['label']}", "",
               f"Trained to t = {fmt(tt, 'g')} "
-              f"({variant_text(run_variant(s['label'], m))}), rolled out "
+              f"({variant_text(run_variant(s['label'], m))}, "
+              f"{size_text(s['label'], m, s.get('n_params'))}), rolled out "
               f"from t = {float(m['t_start']):g} to t = {t1:g}; checkpoint "
               f"`{m.get('fingerprint')}`.", "",
               f"| case | R2(t = {t1:g}) | median | max | min "
-              f"| trajectory-mean R2 | best seed (mean R2) |",
-              "|---|---|---|---|---|---|---|"]
+              f"| trajectory-mean R2 | best seed (mean R2) | diverged |",
+              "|---|---|---|---|---|---|---|---|"]
         rows = [(d["case"], st) for d, st in s["comps"]]
         rows += [(d["case"], st) for d, st in s["boxes"]
                  if d["kind"] == "box"]
@@ -1571,7 +1959,11 @@ def write_readme(summaries, pending, results, work, path):
             L.append(f"| {case} | {e['mean']:.4f} +- {e['sd']:.4f} | "
                      f"{e['median']:.4f} | {e['best']:.4f} | "
                      f"{e['worst']:.4f} | {tm['mean']:.4f} +- {tm['sd']:.4f}"
-                     f" | {b['seed']} ({b['r2_trajectory_mean']:.4f}) |")
+                     f" | {b['seed']} ({b['r2_trajectory_mean']:.4f}) | "
+                     f"{st['n_diverged']} of {st['n_seeds']} |")
+        for case, sk in s["skipped"].items():
+            L.append(f"| {case} | all {sk['n_seeds']} seeds diverged | - | - "
+                     f"| - | - | - | {sk['n_seeds']} of {sk['n_seeds']} |")
         L.append("")
     L += ["## What each run folder holds", "",
           "Cases: `psi0m0.40` ... `psi0p0.40` are the five compositions on "
@@ -1637,7 +2029,8 @@ def write_readme(summaries, pending, results, work, path):
           f"- `{work}/rollout_cache/<run>/` - per-seed rollout cache the "
           "figures are", "  drawn from (`<case>/seed<N>.npz` + `meta.json`)",
           f"- `{work}/predict/<run>/` - `results.json` and `predict.log`",
-          f"- `{work}/models/train_t<END>[_lap]/` - checkpoints, training log "
+          f"- `{work}/models/train_t<END>[_lap][_<size>]/` - checkpoints, "
+          f"training log "
           "and memmaps",
           f"- `{work}/gt_cache/` - the ground-truth cache shared by every "
           "run",
@@ -1648,11 +2041,14 @@ def write_readme(summaries, pending, results, work, path):
         f.write("\n".join(L).rstrip() + "\n")
 
 
-def draw(labels=None, work=WORK, results=RESULTS):
+def draw(labels=None, work=WORK, results=RESULTS, runs_too=True):
     """Draw runs from <work>/rollout_cache/ into <results>/.
 
-    labels=None draws every complete run.  README.md always covers every
-    complete run; comparison.png is written when there are two or more.
+    labels=None draws every complete run; runs_too=False draws none (the
+    --overview mode).  README.md always covers every complete run;
+    comparison.png (the untagged runs, see overview_runs) is written when
+    there are two or more runs, and comparison_t<END>.png for every END with
+    a tagged Laplacian-output run (model size or training seed).
     Returns the labels drawn.
     """
     import matplotlib
@@ -1663,7 +2059,9 @@ def draw(labels=None, work=WORK, results=RESULTS):
     for r in runs:
         r["work"] = work
     by = {r["label"]: r for r in runs}
-    if labels:
+    if not runs_too:
+        todo: list[str] = []
+    elif labels:
         for lab in labels:
             if lab not in by:
                 raise SystemExit(f"[draw] no rollout cache "
@@ -1682,12 +2080,20 @@ def draw(labels=None, work=WORK, results=RESULTS):
     pending = [(r["label"], r["why"]) for r in runs if r["why"]]
     for lab, why in pending:
         print(f"[draw] {lab} skipped: {why}", flush=True)
-    sums = [run_summary(r) for r in done]
+    sums = [x for x in (run_summary(r) for r in done) if x]
+    ends = size_ends(sums)
+    size_images = [f"comparison_t{end:04d}.png" for end in ends]
     if len(sums) >= 2:
-        fig_comparison(plt, sums, os.path.join(results, "comparison.png"))
-        print(f"[draw] comparison.png: {len(sums)} runs", flush=True)
+        shown = overview_runs(sums)
+        fig_comparison(plt, shown, os.path.join(results, "comparison.png"),
+                       variants=size_images)
+        print(f"[draw] comparison.png: {len(shown)} runs", flush=True)
+    for end, name in zip(ends, size_images):
+        group = size_runs(sums, end)
+        fig_size_comparison(plt, group, end, os.path.join(results, name))
+        print(f"[draw] {name}: {len(group)} runs", flush=True)
     write_readme(sums, pending, results, work,
-                 os.path.join(results, "README.md"))
+                 os.path.join(results, "README.md"), size_images)
     print(f"[draw] done: {len(todo)} run folder(s) drawn, README.md lists "
           f"{len(sums)} run(s) in {results}/", flush=True)
     return todo
@@ -1700,6 +2106,9 @@ def main():
     ap.add_argument("--run", default="",
                     help="redraw only this run label, e.g. "
                          "train_t0300_pred_t02000")
+    ap.add_argument("--overview", action="store_true",
+                    help="write only README.md and the comparison images "
+                         "from the caches; redraw no run folder")
     ap.add_argument("--rollout", action="store_true",
                     help="load the checkpoint and fill the rollout cache of "
                          "run_label(--end, --t-end) first, then draw it")
@@ -1717,6 +2126,16 @@ def main():
                     help="--rollout: lap (default) = Laplacian-output model "
                          "Work/models/train_t<END>_lap/, base = the old "
                          "architecture in train_t<END>/")
+    ap.add_argument("--modes", type=int, default=None,
+                    help="--rollout: Fourier modes of the model (default "
+                         "20); 24 selects Work/models/train_t<END>_lap_m24/")
+    ap.add_argument("--width", type=int, default=None,
+                    help="--rollout: channel width of the model (default "
+                         "40)")
+    ap.add_argument("--seed", type=int, default=0,
+                    help="--rollout: training seed of the model (default "
+                         "0); N selects Work/models/train_t<END>_lap_..s<N>/ "
+                         "and labels the run ..s<N>_pred_...")
     ap.add_argument("--ckpt", default="", help="checkpoint to roll out")
     ap.add_argument("--smoke", action="store_true",
                     help="use Work/smoke/ and Work/smoke/Results/")
@@ -1733,6 +2152,9 @@ def main():
     work = a.work or (SMOKE_ROOT if a.smoke else WORK)
     results = a.results or (SMOKE_RESULTS if a.smoke else RESULTS)
     labels = [a.run] if a.run else None
+    if a.overview and (a.run or a.rollout):
+        raise SystemExit("--overview redraws no run folder; drop --run / "
+                         "--rollout")
     if a.rollout:
         if a.work:
             raise SystemExit("--work applies to the draw only; --rollout "
@@ -1741,9 +2163,10 @@ def main():
         label = up.rollout_only(end=a.end, t_end=a.t_end, smoke=a.smoke,
                                 ckpt=a.ckpt, seeds=a.seeds,
                                 schedule_from=a.schedule_from,
-                                variant=a.variant)
+                                variant=a.variant, modes=a.modes,
+                                width=a.width, seed=a.seed)
         labels = [label]
-    draw(labels, work=work, results=results)
+    draw(labels, work=work, results=results, runs_too=not a.overview)
 
 
 if __name__ == "__main__":

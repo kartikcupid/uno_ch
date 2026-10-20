@@ -32,8 +32,11 @@ the first crossing of val_threshold, see interp_survival) becomes best.pt; an
 epoch within select_min_delta of the best only replaces it with a higher
 in-range accuracy (mean R^2 clipped to [0, 1] up to t = 2 END).  The unclipped
 mean R^2 over the whole validation horizon is still logged, for reference.
+A validation rollout that goes non-finite or past max |psi| = diverge_abs is
+scored per seed (R^2 = -1 and failure from its own step on); it no longer
+stops the other seeds of the batch.
 
-The path helpers (RESULTS, WORK, GT_DIR, variant_tag, variant_name,
+The path helpers (RESULTS, WORK, GT_DIR, variant_tag, variant_name, run_tag,
 train_label, run_label, data_path, model_dir, predict_dir, rollout_dir,
 report_dir, PAIRS) and the ground-truth cache (ground_truth, ground_truth_batch,
 find_gt, load_gt) are imported by uno_predict.py and make_submission.py.
@@ -72,6 +75,8 @@ ARCHIVE = "Archive"
 GT_DIR = os.path.join(WORK, "gt_cache")
 SMOKE_ROOT = os.path.join(WORK, "smoke")
 SMOKE_RESULTS = os.path.join(SMOKE_ROOT, RESULTS)
+DEFAULT_WIDTH = 40
+DEFAULT_MODES = 20
 PAIRS = {300: 10000.0, 500: 10000.0, 1000: 10000.0, 2000: 10000.0}
 
 
@@ -93,15 +98,34 @@ def variant_name(laplacian_output):
     return "lap" if laplacian_output else "base"
 
 
-def train_label(end, variant=""):
-    """train_t0300 for END = 300; train_t0300_lap for the lap variant."""
-    return f"train_t{int(round(end)):04d}{variant_tag(variant)}"
+def run_tag(width=40, modes=20, seed=0):
+    """'' for the default (width 40, modes 20, seed 0); else 'w<W>', 'm<M>'
+    and 's<N>' in that order, without the underscore: 'm24', 'w48', 'w44m22',
+    'w32s1', 's3'."""
+    if int(seed) < 0:
+        raise SystemExit(f"--seed must be >= 0 (got {int(seed)})")
+    tag = ""
+    if int(width) != DEFAULT_WIDTH:
+        tag += f"w{int(width)}"
+    if int(modes) != DEFAULT_MODES:
+        tag += f"m{int(modes)}"
+    if int(seed) != 0:
+        tag += f"s{int(seed)}"
+    return tag
 
 
-def run_label(end, t_end, variant=""):
+def train_label(end, variant="", tag=""):
+    """train_t0300 for END = 300; train_t0300_lap for the lap variant;
+    train_t0300_lap_m24 for the lap variant with 24 Fourier modes."""
+    t = f"_{tag}" if tag else ""
+    return f"train_t{int(round(end)):04d}{variant_tag(variant)}{t}"
+
+
+def run_label(end, t_end, variant="", tag=""):
     """train_t0300_lap_pred_t10000 for a lap model trained to 300 and
-    predicted to 10000; train_t0300_pred_t10000 for the base one."""
-    return (f"{train_label(end, variant)}_pred_"
+    predicted to 10000; train_t0300_pred_t10000 for the base one;
+    train_t0300_lap_m24_pred_t10000 for a size-tagged one."""
+    return (f"{train_label(end, variant, tag)}_pred_"
             f"t{int(round(t_end)):05d}")
 
 
@@ -109,8 +133,8 @@ def data_path(end, root=WORK):
     return os.path.join(root, "data", f"test_t{int(round(end)):04d}.npz")
 
 
-def model_dir(end, root=WORK, variant=""):
-    return os.path.join(root, "models", train_label(end, variant))
+def model_dir(end, root=WORK, variant="", tag=""):
+    return os.path.join(root, "models", train_label(end, variant, tag))
 
 
 def gt_dir(root=WORK):
@@ -195,6 +219,7 @@ CONFIG: dict[str, Any] = dict(
     val_dt_max     = 40.0,
     val_save_every = 4.0,
     val_threshold  = 0.80,
+    diverge_abs    = 10.0,
     val_every      = 2,
     select         = "survival",
     select_min_delta = 1.0,
@@ -1174,6 +1199,12 @@ def lowk_val_text(gains):
                     for t0, g in gains.items())
 
 
+def alive_mask(psi, limit):
+    """Per-sample bool (b,): finite everywhere and max |psi| <= limit."""
+    flat = psi.detach().flatten(1)
+    return torch.isfinite(flat).all(dim=1) & (flat.abs().amax(dim=1) <= limit)
+
+
 @torch.no_grad()
 def eval_rollout(model, gt_paths, cfg, device, dtype):
     """Full 128-box rollout on the held-out seeds.
@@ -1182,8 +1213,15 @@ def eval_rollout(model, gt_paths, cfg, device, dtype):
     interpolated survival time (the selection score), the per-seed survival
     times, and the in-range accuracy: the mean over seeds and rollout times
     t <= min(2 END, val_t1) of R^2 clipped to [0, 1].
+
+    A seed diverges when its field goes non-finite or max |psi| exceeds
+    cfg["diverge_abs"].  It is frozen at its last good state so it cannot
+    feed NaN to the model, gets R^2 = -1 from that step on and fails at its
+    own step; the other seeds keep rolling and are scored as usual (the
+    model acts on every sample separately).
     """
     model.eval()
+    limit = float(cfg.get("diverge_abs", CONFIG["diverge_abs"]))
     truth_list, times = [], None
     for path in gt_paths:
         t, f = load_gt(path, cfg["val_t1"])
@@ -1201,22 +1239,28 @@ def eval_rollout(model, gt_paths, cfg, device, dtype):
     psi = torch.as_tensor(truth[0], dtype=dtype, device=device).unsqueeze(1)
     b = psi.shape[0]
     r2 = np.ones((len(times), b))
-    diverged = len(times)
+    alive = torch.ones(b, dtype=torch.bool, device=device)
+    div_k = np.full(b, len(times))
     for i in range(1, len(times)):
         dt = torch.full((b,), float(times[i] - times[i - 1]), device=device,
                         dtype=dtype)
-        psi = model(psi, dt)
-        if not torch.isfinite(psi).all():
-            r2[i:] = -1.0
-            diverged = i
-            break
+        new = model(psi, dt)
+        newly = alive & ~alive_mask(new, limit)
+        if bool(newly.any()):
+            div_k[newly.cpu().numpy()] = i
+            alive = alive & ~newly
+            if not bool(alive.any()):
+                break
+        psi = torch.where(alive.view(-1, 1, 1, 1), new, psi)
         tr = torch.as_tensor(truth[i], dtype=dtype, device=device).unsqueeze(1)
         num = _sq(psi - tr)
         den = _sq(tr - tr.mean(dim=(1, 2, 3), keepdim=True))
         r2[i] = (1 - num / den).double().cpu().numpy()
 
     failing = r2.copy()
-    failing[diverged:] = np.nan
+    for k in range(b):
+        r2[div_k[k]:, k] = -1.0
+        failing[div_k[k]:, k] = np.nan
     survive = [interp_survival(times, failing[:, k], cfg["val_threshold"])
                for k in range(b)]
     in_range = np.asarray(times) <= min(2.0 * cfg["train_end"], cfg["val_t1"])
@@ -1305,8 +1349,9 @@ def benchmark(cfg, device, dtype):
 
 
 def train(cfg, device, dtype, prec, rank, world, local, out_dir, smoke):
-    torch.manual_seed(cfg["seed"] + rank)
-    np.random.seed(cfg["seed"] + rank)
+    seed0 = int(cfg["seed"]) * 1000
+    torch.manual_seed(seed0 + rank)
+    np.random.seed(seed0 + rank)
     torch.backends.cudnn.benchmark = True
     if "SLURM_CPUS_PER_TASK" in os.environ:
         torch.set_num_threads(max(1, int(os.environ["SLURM_CPUS_PER_TASK"])))
@@ -1346,9 +1391,9 @@ def train(cfg, device, dtype, prec, rank, world, local, out_dir, smoke):
     log(f"[data] {cfg['npz']} -> training data ends at t = {end:g}  "
         f"train_X {shapes['train']}", rank=rank)
     train_s = PairSampler(paths["train"], cfg, device, dtype,
-                          cfg["seed"] + 100 + rank)
+                          seed0 + 100 + rank)
     val_s = PairSampler(paths["val"], cfg, device, dtype,
-                        cfg["seed"] + 200 + rank)
+                        seed0 + 200 + rank)
     gb = train_s.data.numel() * 4 / 1e9
     log(f"[data] train {tuple(train_s.data.shape)}  "
         f"val {tuple(val_s.data.shape)}  float32, {gb:.2f} GB", rank=rank)
@@ -1411,7 +1456,8 @@ def train(cfg, device, dtype, prec, rank, world, local, out_dir, smoke):
         lr=cfg["lr"], unroll_stages=tuple_of(cfg["unroll_stages"]),
         train_shape=shapes["train"], val_shape=shapes["val"],
         npz=os.path.basename(cfg["npz"]), val_t1=float(cfg["val_t1"]),
-        select=cfg["select"], select_min_delta=float(cfg["select_min_delta"]))
+        select=cfg["select"], select_min_delta=float(cfg["select_min_delta"]),
+        seed=int(cfg["seed"]))
     horizon = dict(train_t_end=t_data["train"], train_shape=shapes["train"],
                    val_shape=shapes["val"])
     state: dict[str, Any] = {}
@@ -1428,6 +1474,8 @@ def train(cfg, device, dtype, prec, rank, world, local, out_dir, smoke):
             if diff:
                 reason = f"architecture changed: {diff}"
         prior = cand.get("sched")
+        if prior is not None:
+            prior = {"seed": 0, **prior}
         if reason is None and prior is not None:
             sdiff = {k: (prior.get(k), sched.get(k))
                      for k in sorted(set(prior) | set(sched))
@@ -1471,7 +1519,7 @@ def train(cfg, device, dtype, prec, rank, world, local, out_dir, smoke):
     ema = EMA(raw, cfg["ema_decay"])
     if state.get("ema"):
         ema.shadow = {k: v.to(device) for k, v in state["ema"].items()}
-    gen = torch.Generator(device=device).manual_seed(cfg["seed"] + rank)
+    gen = torch.Generator(device=device).manual_seed(seed0 + rank)
 
     opt = torch.optim.AdamW(model.parameters(), lr=cfg["lr"],
                             weight_decay=cfg["weight_decay"], betas=(0.9, 0.95))
@@ -1660,6 +1708,20 @@ def parse_args(argv=None):
                          "head predicts M and the increment is its 5-point "
                          "Laplacian, model in Work/models/train_t<END>_lap/; "
                          "base: the old direct-increment model")
+    ap.add_argument("--modes", type=int, default=None,
+                    help="Fourier modes at the finest level (default "
+                         "CONFIG['modes'] = 20); 24 gives 25.1M parameters. "
+                         "A non-default value is tagged m<M> in the model "
+                         "directory and every label")
+    ap.add_argument("--width", type=int, default=None,
+                    help="channel width (default CONFIG['width'] = 40); a "
+                         "non-default value is tagged w<W>")
+    ap.add_argument("--seed", type=int, default=None,
+                    help="training seed (default CONFIG['seed'] = 0): weight "
+                         "init, training and validation pair draws and "
+                         "augmentation noise; a non-zero value is tagged "
+                         "s<N>, so w32 seed 1 trains into train_t<END>_lap_"
+                         "w32s1/ next to the seed-0 run")
     ap.add_argument("--smoke", action="store_true",
                     help="tiny run; writes only under Work/smoke/")
     ap.add_argument("--bench", action="store_true")
@@ -1671,6 +1733,7 @@ def parse_args(argv=None):
 def resolve_config(a):
     """CONFIG (+SMOKE) with END, dataset, output dirs and val_t1 filled in."""
     cfg: dict[str, Any] = dict(CONFIG)
+    base_width, base_modes = cfg["width"], cfg["modes"]
     if a.smoke:
         cfg.update(SMOKE)
     if a.end is not None:
@@ -1681,10 +1744,17 @@ def resolve_config(a):
     variant = getattr(a, "variant", None)
     if variant:
         cfg["laplacian_output"] = variant == "lap"
+    if getattr(a, "modes", None):
+        cfg["modes"] = base_modes = int(a.modes)
+    if getattr(a, "width", None):
+        cfg["width"] = base_width = int(a.width)
+    if getattr(a, "seed", None) is not None:
+        cfg["seed"] = int(a.seed)
     cfg["laplacian_output"] = bool(cfg["laplacian_output"])
     cfg["variant"] = variant_name(cfg["laplacian_output"])
+    cfg["size_tag"] = run_tag(base_width, base_modes, cfg["seed"])
     cfg["npz"] = a.npz or cfg["npz"] or data_path(end)
-    cfg["model_dir"] = model_dir(end, root, cfg["variant"])
+    cfg["model_dir"] = model_dir(end, root, cfg["variant"], cfg["size_tag"])
     cfg["gt_dir"] = gt_dir(root)
     if not float(cfg["val_t1"]):
         cfg["val_t1"] = default_t_end(end)
@@ -1715,7 +1785,9 @@ def main():
         f"{datetime.now():%Y-%m-%d %H:%M:%S}", rank=rank)
     log("=" * 78, rank=rank)
     log(f"[setup] END = {cfg['train_end']}  variant {cfg['variant']}  "
-        f"data {cfg['npz']}  validation to t = {cfg['val_t1']:g}", rank=rank)
+        f"width {cfg['width']}  modes {cfg['modes']}  "
+        f"seed {cfg['seed']}  data {cfg['npz']}  "
+        f"validation to t = {cfg['val_t1']:g}", rank=rank)
     train(cfg, device, dtype, prec, rank, world, local, out_dir, smoke)
     if world > 1:
         dist.destroy_process_group()
